@@ -2,7 +2,7 @@
   "name": "Dagstart",
   "short_name": "Dagstart",
   "description": "Persoonlijke dagstart — journaal, lichaam en reflectie",
-  "start_url": "dagstart.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#16130e",
   "theme_color": "#16130e",

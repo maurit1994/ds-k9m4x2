@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Dagstart"/>
+<meta name="theme-color" content="#16130e"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Dagstart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#16130e;min-height:100vh;}
+.ds{
+  --bg:#16130e;--card:#1f1b14;--br:#2a2318;--tx:#f0e8d8;--tx2:#e8dcc8;--mu:#6a5e4e;--su:#5a4a38;--di:#4a3e2e;
+  --cb:#3a3020;--sc:#221c12;--sb:#332a1a;
+  --gb:#181e24;--gr:#1e2e3a;--gc:#3a6a8a;--gl:#4a7a9a;--gn:#7ac4e8;
+  --nb:#100e09;--pb:#2a2318;
+  --hl:#1e3a54;--hf:#1a3d2a;--he:#2a2318;--hlc:#6bb3e8;--hfc:#4a9e6a;--hec:#3a3020;
+  --ac:#3d2a0a;--a:#c27820;--a2:#d4944a;--wh:#221808;--nm:#2a3a4a;
+  --fb:#1a1f1a;--fr:#2a3a2a;--ib:#0e0c08;--ic:#1a1710;--ir:#3a3020;
+  font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--tx);
+  min-height:100vh;max-width:480px;margin:0 auto;display:flex;flex-direction:column;
+}
+.ds.light{
+  --bg:#faf6f0;--card:#fff;--br:#e8dfd4;--tx:#1a1510;--tx2:#2a2018;--mu:#8a7868;--su:#a09080;--di:#c0b0a0;
+  --cb:#d4c8b8;--sc:#f5f0e8;--sb:#e0d4c4;
+  --gb:#eef4f8;--gr:#c8dce8;--gc:#2a6a9a;--gl:#1a5a8a;--gn:#1a6a9a;
+  --nb:#f0ece4;--pb:#e8dfd4;
+  --hl:#c8ddf0;--hf:#c0e8d0;--he:#e8dfd4;--hlc:#1a5a8a;--hfc:#1a6a3a;--hec:#a09080;
+  --ac:#fdf0e0;--a:#c27820;--a2:#d4944a;--wh:#fdf8f0;--nm:#a8c4d8;
+  --fb:#f0f8f0;--fr:#c0dcc0;--ib:#f5f0e8;--ic:#fff;--ir:#d4c8b8;
+}
+.serif{font-family:'Playfair Display',Georgia,serif;}
+.hdr{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--br);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;}
+.con{flex:1;overflow-y:auto;padding-bottom:72px;}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--nb);border-top:1px solid var(--br);display:flex;z-index:20;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 14px;background:none;border:none;cursor:pointer;gap:3px;font-family:'DM Sans',sans-serif;}
+.card{background:var(--card);border:1px solid var(--br);border-radius:14px;padding:16px;margin-bottom:10px;}
+.sp-card{background:var(--sc);border:1px solid var(--sb);border-radius:12px;padding:14px;margin-bottom:8px;position:relative;}
+.gar{background:var(--gb);border:1px solid var(--gr);border-radius:12px;padding:14px;margin-top:12px;}
+.slaap-box{background:#12181a;border:1px solid #1e3040;border-radius:12px;padding:14px;margin-top:12px;}
+.ds.light .slaap-box{background:#eef6fa;border-color:#b0d0e0;}
+.fys{background:var(--fb);border:1px solid var(--fr);border-radius:12px;padding:14px;margin-top:12px;}
+.avond-card{background:linear-gradient(135deg,#1a2420,#0e1812);border:1px solid #2a4a38;border-radius:14px;padding:16px;margin-bottom:10px;}
+.ds.light .avond-card{background:linear-gradient(135deg,#f0f8f4,#e8f4f0);border-color:#a8d4c0;}
+.profiel-card{background:linear-gradient(135deg,#1a1620,#120e1a);border:1px solid #3a2a4a;border-radius:14px;padding:16px;margin-bottom:10px;}
+.ds.light .profiel-card{background:linear-gradient(135deg,#f8f4fc,#f0ecf8);border-color:#c8b8d8;}
+.sync-card{background:linear-gradient(135deg,#0e1a20,#081218);border:1px solid #1e3a4a;border-radius:14px;padding:16px;margin-bottom:10px;}
+.ds.light .sync-card{background:linear-gradient(135deg,#eef8fc,#e4f4f8);border-color:#a0cce0;}
+.lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);}
+.lbl-g{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gc);}
+.lbl-f{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#5a8a5a;}
+.lbl-a{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#4a9e6a;}
+.lbl-s{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#4a8aa8;}
+.lbl-p{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#9a7ab8;}
+.lbl-gh{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#4a8aaa;}
+.chip{padding:8px 12px;border-radius:20px;border:1px solid var(--cb);background:transparent;color:#8a7a68;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap;}
+.chip.on{background:var(--ac);border-color:#8a5020;color:var(--a2);}
+.chip.sm{padding:6px 10px;font-size:12px;}
+.chip.reis{border-color:#3a6a4a;color:#5a9a6a;}
+.chip.reis.on{background:#1a3d2a;border-color:#2a7a4a;color:#4a9e6a;}
+.ci-L.on{background:#1a3d2a!important;border-color:#2a6a3a!important;color:#4a9e6a!important;}
+.ci-M.on{background:var(--ac)!important;border-color:#8a5020!important;color:#d4944a!important;}
+.ci-H.on{background:#3d1a0a!important;border-color:#8a3020!important;color:#e06040!important;}
+.slaap-btn{flex:1;padding:10px 4px;border-radius:10px;border:1px solid #1e3040;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;color:#4a8aa8;text-align:center;transition:all .15s;}
+.slaap-btn.on{color:#fff;border-color:transparent;}
+.ta{width:100%;background:transparent;border:none;color:var(--tx2);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;resize:none;min-height:80px;outline:none;}
+.ta::placeholder{color:var(--di);}
+.ta-p{width:100%;background:transparent;border:none;border-bottom:1px solid #3a2a4a;color:var(--tx2);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;resize:none;outline:none;padding:6px 0;}
+.ta-p::placeholder{color:var(--di);}
+.ni{width:100%;background:transparent;border:none;border-bottom:1px solid var(--nm);color:var(--gn);font-family:'DM Sans',sans-serif;font-size:30px;font-weight:500;text-align:center;outline:none;padding:8px 0 4px;}
+.ni::placeholder{color:var(--gr);}
+.prog{height:3px;background:var(--pb);border-radius:2px;overflow:hidden;margin-bottom:22px;}
+.pf{height:100%;background:var(--a);border-radius:2px;transition:width .3s;}
+.sn{font-size:11px;color:var(--mu);letter-spacing:1px;margin-bottom:8px;}
+.sq{font-size:20px;color:var(--tx);line-height:1.35;margin-bottom:5px;}
+.sh{font-size:12px;color:var(--su);margin-bottom:18px;}
+.btn{width:100%;padding:15px;border-radius:14px;border:none;background:var(--a);color:#fff;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;cursor:pointer;margin-top:18px;}
+.btn:disabled{background:var(--pb);color:var(--mu);cursor:default;}
+.btn-bk{font-size:13px;color:var(--su);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0;margin-bottom:18px;}
+.pbn{flex:1;padding:10px 4px;border-radius:10px;border:1px solid var(--br);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--mu);text-align:center;transition:all .15s;}
+.pbn.on{color:#fff;border-color:transparent;}
+.obn{flex:1;padding:12px 6px;border-radius:12px;border:1px solid var(--br);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--mu);transition:all .15s;}
+.obn.on{background:var(--ac);border-color:#8a5020;color:var(--a2);}
+.tpill{display:flex;border-radius:20px;border:1px solid var(--gr);overflow:hidden;}
+.tpill button{padding:7px 13px;background:transparent;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gl);}
+.tpill button.on{background:var(--gb);color:var(--gn);filter:brightness(1.3);}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.edb{background:transparent;border:1px solid var(--cb);color:var(--mu);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;margin-left:auto;}
+.wbtn{width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;border:1px solid var(--br);background:var(--card);cursor:pointer;text-align:left;margin-bottom:6px;font-family:'DM Sans',sans-serif;}
+.wbody{border:1px solid var(--br);border-radius:12px;padding:8px;margin-bottom:10px;background:var(--card);}
+.scrd{background:var(--card);border:1px solid var(--br);border-radius:14px;padding:16px;text-align:center;}
+.hmap{display:flex;flex-wrap:wrap;gap:5px;}
+.hc{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;}
+.empty{padding:48px 20px;text-align:center;color:var(--mu);font-size:14px;}
+.cai{background:var(--card);border:1px solid var(--br);border-radius:14px 14px 14px 4px;padding:12px 14px;font-size:14px;line-height:1.65;color:var(--tx2);max-width:88%;align-self:flex-start;}
+.cme{background:var(--ac);border:1px solid #5a3a10;border-radius:14px 14px 4px 14px;padding:12px 14px;font-size:14px;line-height:1.65;color:var(--tx);max-width:88%;align-self:flex-end;}
+.cin{flex:1;background:var(--card);border:1px solid var(--cb);border-radius:10px;padding:10px 13px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;resize:none;min-height:40px;max-height:120px;line-height:1.5;}
+.cin::placeholder{color:var(--di);}
+.csnd{background:var(--a);border:none;border-radius:10px;padding:0 16px;color:#fff;cursor:pointer;font-size:18px;flex-shrink:0;height:40px;display:flex;align-items:center;}
+.csnd:disabled{background:var(--pb);color:var(--mu);}
+.mt{display:flex;gap:8px;margin-bottom:16px;}
+.mb{flex:1;padding:11px;border-radius:10px;border:1px solid var(--br);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;background:var(--card);}
+.asp{width:100%;padding:11px;border-radius:10px;border:1px dashed var(--cb);background:transparent;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;margin-top:4px;}
+.rb{position:absolute;top:10px;right:10px;background:transparent;border:none;color:var(--su);cursor:pointer;font-size:16px;padding:2px 6px;}
+.tbtn{background:transparent;border:1px solid var(--br);border-radius:20px;padding:5px 10px;cursor:pointer;font-size:13px;color:var(--mu);font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:5px;}
+.sumc{background:var(--gb);border:1px solid var(--gr);border-radius:14px;padding:16px;margin-bottom:10px;}
+.dbtn{padding:9px 14px;border-radius:10px;border:1px solid var(--br);background:transparent;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;}
+.ivs{min-height:100vh;background:var(--ib);display:flex;flex-direction:column;}
+.ivnx{width:100%;padding:16px;border-radius:14px;border:none;background:var(--a);color:#fff;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;cursor:pointer;}
+.ivnx:disabled{background:var(--pb);color:var(--mu);}
+.ivsb{flex:1;padding:11px;border-radius:12px;border:1px solid var(--ir);background:transparent;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+.ivl{width:100%;padding:14px;border-radius:14px;border:1px solid var(--a);background:transparent;color:var(--a);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;}
+.ivbox{background:var(--ic);border:1px solid var(--ir);border-radius:14px;padding:16px;min-height:80px;font-size:15px;color:var(--tx2);line-height:1.7;font-style:italic;}
+.ivst{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;}
+/* Setup overlay */
+.setup{position:fixed;inset:0;background:#0a0806;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:40px 24px 60px;z-index:200;}
+.setup-card{width:100%;max-width:360px;background:#1a1510;border:1px solid #2a2010;border-radius:16px;padding:20px;margin-bottom:14px;}
+.setup-input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #3a3020;background:#0e0c08;color:#f0e8d8;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-top:10px;}
+.setup-input::placeholder{color:#4a3e2e;}
+.setup-btn{width:100%;max-width:360px;padding:15px;border-radius:14px;border:none;background:#c27820;color:#fff;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;cursor:pointer;margin-top:8px;}
+.setup-skip{background:none;border:none;color:#5a4a38;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:14px;text-decoration:underline;}
+.setup-link{font-size:11px;color:#5a7a6a;margin-top:6px;line-height:1.5;}
+/* Sync indicator */
+.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinning{animation:spin .8s linear infinite;display:inline-block;}
+@keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+.dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--mu);margin:0 2px;animation:blink 1.4s infinite both;}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.92)}}
+.recdot{width:12px;height:12px;border-radius:50%;background:#e06040;animation:pulse 1.2s infinite;}
+@keyframes wv{0%,100%{height:4px}50%{height:18px}}
+input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.4;cursor:pointer;}
+.ds.light input[type="time"]::-webkit-calendar-picker-indicator{filter:none;opacity:.6;}
+.wb{width:3px;border-radius:2px;background:var(--a);display:inline-block;margin:0 2px;}
+.wb:nth-child(1){animation:wv .8s infinite}.wb:nth-child(2){animation:wv .8s .1s infinite}
+.wb:nth-child(3){animation:wv .8s .2s infinite}.wb:nth-child(4){animation:wv .8s .3s infinite}.wb:nth-child(5){animation:wv .8s .4s infinite}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── localStorage ─────────────────────────────────────────────────────────────
+const SK="ds_v1_";
+async function sGet(k){try{const v=localStorage.getItem(SK+k);return v?JSON.parse(v):null;}catch{return null;}}
+async function sSet(k,v){try{localStorage.setItem(SK+k,JSON.stringify(v));return true;}catch{return false;}}
+async function sList(){try{const r=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(SK))r.push(k.slice(SK.length));}return r;}catch{return[];}}
+
+// ── Keys ──────────────────────────────────────────────────────────────────────
+const getApiKey=()=>localStorage.getItem('ds_apikey')||'';
+const saveApiKey=k=>k?localStorage.setItem('ds_apikey',k):localStorage.removeItem('ds_apikey');
+const getGhToken=()=>localStorage.getItem('ds_gh_token')||'';
+const saveGhToken=t=>t?localStorage.setItem('ds_gh_token',t):localStorage.removeItem('ds_gh_token');
+const getGistId=()=>localStorage.getItem('ds_gist_id')||'';
+const saveGistId=id=>id?localStorage.setItem('ds_gist_id',id):localStorage.removeItem('ds_gist_id');
+const isSetupDone=()=>!!localStorage.getItem('ds_setup_done');
+const markSetupDone=()=>localStorage.setItem('ds_setup_done','1');
+
+// ── Anthropic API ─────────────────────────────────────────────────────────────
+async function callApi(messages,system,maxTokens=1000){
+  const key=getApiKey();if(!key)throw new Error('no-key');
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:maxTokens,system,messages})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return d.content?.find(b=>b.type==="text")?.text||"…";
+}
+
+// ── GitHub Gist sync ──────────────────────────────────────────────────────────
+const GIST_FILE='dagstart_data.json';
+const GIST_DESC='Dagstart — privé sync';
+const ghH=t=>({'Authorization':`token ${t}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'});
+
+async function ghFindGist(token){
+  // List all gists, find the Dagstart one by description + file
+  let page=1;
+  while(page<=5){
+    const r=await fetch(`https://api.github.com/gists?per_page=100&page=${page}`,{headers:ghH(token)});
+    if(!r.ok)throw new Error(`GitHub fout ${r.status}`);
+    const gists=await r.json();if(!gists.length)break;
+    const found=gists.find(g=>g.description===GIST_DESC&&g.files?.[GIST_FILE]);
+    if(found)return found.id;
+    if(gists.length<100)break;
+    page++;
+  }
+  return null;
+}
+
+async function ghLoad(token,gistId){
+  const r=await fetch(`https://api.github.com/gists/${gistId}`,{headers:ghH(token)});
+  if(r.status===404)throw new Error('gist-not-found');
+  if(!r.ok)throw new Error(`GitHub fout ${r.status}`);
+  const d=await r.json();
+  const content=d.files?.[GIST_FILE]?.content;
+  if(!content)throw new Error('Bestand leeg');
+  return JSON.parse(content);
+}
+
+async function ghCreate(token,data){
+  const r=await fetch('https://api.github.com/gists',{method:'POST',headers:ghH(token),body:JSON.stringify({description:GIST_DESC,public:false,files:{[GIST_FILE]:{content:JSON.stringify(data)}}})});
+  if(!r.ok)throw new Error(`GitHub fout ${r.status}`);
+  return(await r.json()).id;
+}
+
+async function ghPush(token,gistId,data){
+  const r=await fetch(`https://api.github.com/gists/${gistId}`,{method:'PATCH',headers:ghH(token),body:JSON.stringify({files:{[GIST_FILE]:{content:JSON.stringify(data)}}})});
+  if(!r.ok)throw new Error(`GitHub fout ${r.status}`);
+}
+
+// Merge: per entry, highest timestamp wins
+function mergeMap(local,remote){
+  const m={...(remote||{})};
+  for(const[k,v]of Object.entries(local||{})){
+    if(!m[k]||(v?.timestamp||0)>(m[k]?.timestamp||0))m[k]=v;
+  }
+  return m;
+}
+
+// Full sync: load remote, merge, push merged back. Returns merged data.
+async function syncAll(entries,avond,profiel){
+  const token=getGhToken();
+  if(!token)return{ok:false,msg:'Geen GitHub token'};
+  try{
+    let gistId=getGistId();
+    // If no stored gist ID, search GitHub for existing one
+    if(!gistId){gistId=await ghFindGist(token);if(gistId)saveGistId(gistId);}
+
+    const payload={version:2,synced:new Date().toISOString(),entries,avond,profiel};
+
+    if(!gistId){
+      // First ever sync — create new gist
+      gistId=await ghCreate(token,payload);
+      saveGistId(gistId);
+      return{ok:true,msg:'Gist aangemaakt ✓',merged:{entries,avond,profiel}};
+    }
+
+    // Load remote, merge, push
+    let remote;
+    try{remote=await ghLoad(token,gistId);}
+    catch(e){
+      if(e.message==='gist-not-found'){
+        // Gist was deleted, create new one
+        saveGistId('');
+        gistId=await ghCreate(token,payload);
+        saveGistId(gistId);
+        return{ok:true,msg:'Nieuw gist aangemaakt ✓',merged:{entries,avond,profiel}};
+      }
+      throw e;
+    }
+    const mergedEntries=mergeMap(entries,remote.entries);
+    const mergedAvond=mergeMap(avond,remote.avond);
+    await ghPush(token,gistId,{...payload,entries:mergedEntries,avond:mergedAvond,profiel});
+    return{ok:true,msg:`Gesynchroniseerd ✓`,merged:{entries:mergedEntries,avond:mergedAvond,profiel}};
+  }catch(e){return{ok:false,msg:e.message};}
+}
+
+// ── Date helpers ──────────────────────────────────────────────────────────────
+function fmt(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;}
+function addDays(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);}
+function isWknd(d){return d.getDay()===0||d.getDay()===6;}
+function calcStreak(all,key){let s=0;for(let i=0;i<120;i++){const d=new Date();d.setDate(d.getDate()-i);const k=fmt(d);if(all[k])s++;else if(k!==key)break;}return s;}
+
+function herstelScore(l){
+  if(!l?.pijn)return null;let pts=(6-l.pijn)*2;
+  pts+=l.oefeningen==="Ja"?3:l.oefeningen==="Deels"?1.5:0;
+  pts+=(l.sporten||[]).some(x=>x.sport&&x.sport!=="Geen")?1:0;
+  const g=l.garmin,ss=l.slaap?.subjectief;pts+=ss?(ss-1)*0.75:0;
+  if(g?.gedragen&&g?.bodyBattery!=null)pts+=(g.bodyBattery/100)*2;
+  return+(Math.min(10,pts/17*10)).toFixed(1);
+}
+function scoreColor(v){return v===null?"var(--mu)":v>=8?"#4a9e6a":v>=6?"#8ab84a":v>=4?"#d4944a":"#c0602a";}
+function sportLabel(sp=[]){return!sp?.length?"geen sport":sp.map(s=>`${s.sport}${s.duur?" · "+s.duur:""}${s.intensiteit?" · "+s.intensiteit:""}`).join(", ");}
+function buildText(qs,ans){return qs.map(q=>{if(q.type==="lichaam"){const l=ans.lichaam||{},g=l.garmin,sl=l.slaap;return`Lichaam: sport: ${sportLabel(l.sporten)} | pijn:${l.pijn?PIJN_L[l.pijn]:"?"} | oef:${l.oefeningen||"?"} | slaap:${sl?.subjectief?SLAAP_L[sl.subjectief]:"?"} | ${g?.gedragen?`BB:${g.bodyBattery} HRV:${g.hrvStatus} slaap:${g.slaapscore}`:"geen garmin"}${l.fysio?" | fysio:"+l.fysio:""}`;}return`${q.q}: ${ans[q.id]||"(niet ingevuld)"}`;}).join("\n");}
+function buildChatSys(p){const c=[];if(p?.naam)c.push(`Naam: ${p.naam}`);if(p?.werk)c.push(`Werk/rol: ${p.werk}`);if(p?.klachten)c.push(`Lichamelijke klachten: ${p.klachten}`);const b=c.length?`\n\nAchtergrond:\n${c.join("\n")}`:"";return`Je bent een nieuwsgierige gesprekspartner.${b}\n\nStel 1–2 concrete vervolgvragen op basis van de antwoorden. Toon: informeel, direct. ALLEEN vragen, geen advies, max 3 zinnen, Nederlands.`;}
+function buildSumSys(p){const c=[];if(p?.naam)c.push(`Naam: ${p.naam}`);if(p?.werk)c.push(`Werk/rol: ${p.werk}`);if(p?.klachten)c.push(`Lichamelijke klachten: ${p.klachten}`);const b=c.length?`\n\nAchtergrond:\n${c.join("\n")}`:"";return`Analyseer dagstart-entries van de afgelopen week.${b}\n\nMax 150 woorden: patronen, verbanden, feitelijk. GEEN adviezen. Eindig met één observatievraag. Schrijf als data-analist. Nederlands.`;}
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const DAYS=["Zondag","Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag"];
+const DAYS_S=["Zo","Ma","Di","Wo","Do","Vr","Za"];
+const MONTHS=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
+const PIJN_L=["","Geen","Licht","Matig","Veel","Erg veel"];
+const PIJN_C=["","#4a9e6a","#8ab84a","#d4944a","#c0602a","#a03020"];
+const SLAAP_L=["","Slecht","Matig","Oké","Goed","Uitstekend"];
+const SLAAP_C=["","#a03020","#c0602a","#d4944a","#8ab84a","#4a9e6a"];
+const OEF=["Ja","Deels","Nee"];
+const HRV=[{v:"Goed",c:"#4a9e6a",dD:"#1a3d2a",bD:"#2a6a3a"},{v:"Matig",c:"#d4944a",dD:"#3d2a0a",bD:"#6a4018"},{v:"Slecht",c:"#c0602a",dD:"#3d1a08",bD:"#7a3018"}];
+const SPORT_STD=["Gym","Hardlopen","Wandelen","Fietsen","Pilates","Yoga","Zwemmen","Anders","Geen"];
+const SPORT_REIS=["Wandelen","Hardlopen","Fietsen","Pilates","Gym","Yoga","Zwemmen","Anders","Geen"];
+const DUUR=["< 30 min","30–60 min","60+ min"];
+const INT=["Laag","Medium","Hoog"];
+const LITE_Q=[{id:"goed",type:"text",q:"Wat ging er gisteren goed?",hint:"Begin met één ding"},{id:"bereiken",type:"text",q:"Wat wil ik vandaag écht bereiken?",hint:"Één prioriteit"},{id:"zin",type:"text",q:"Waar heb ik zin in vandaag?",hint:"Energie voor de dag"},{id:"lichaam",type:"lichaam"}];
+const FULL_Q=[{id:"goed",type:"text",q:"Wat ging er gisteren goed?",hint:"Begin met één ding"},{id:"dankbaar",type:"text",q:"Waar ben ik vandaag dankbaar voor?",hint:"Klein of groot"},{id:"bereiken",type:"text",q:"Wat wil ik vandaag écht bereiken?",hint:"Één prioriteit"},{id:"gedragen",type:"text",q:"Hoe wil ik me vandaag gedragen?",hint:"Één woord of zin"},{id:"onrustig",type:"text",q:"Wat houdt me bezig of maakt me onrustig?",hint:"Geef het een plek"},{id:"zin",type:"text",q:"Waar heb ik zin in vandaag?",hint:"Energie voor de dag"},{id:"lichaam",type:"lichaam"}];
+const WKND_Q={id:"weekend",type:"text",q:"Wat plan ik sociaal of persoonlijk dit weekend?",hint:"Iets om naar uit te kijken"};
+
+// ── Speech hook ───────────────────────────────────────────────────────────────
+function useSpeech(){
+  const recRef=useRef(null);const[activeId,setActiveId]=useState(null);const[micError,setMicError]=useState(null);
+  const supported=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+  const start=useCallback((id,onResult)=>{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){setMicError("Gebruik Chrome of Safari voor spraak.");return;}
+    if(recRef.current){try{recRef.current.stop();}catch{}}
+    const rec=new SR();rec.lang="nl-NL";rec.continuous=false;rec.interimResults=false;
+    rec.onresult=e=>{onResult(Array.from(e.results).map(r=>r[0].transcript).join(" "));setMicError(null);};
+    rec.onerror=e=>{setActiveId(null);if(e.error==="not-allowed")setMicError("Microfoon geblokkeerd — geef toestemming in je browser.");else if(e.error!=="no-speech")setMicError(`Fout: ${e.error}`);};
+    rec.onend=()=>setActiveId(null);recRef.current=rec;
+    try{rec.start();setActiveId(id);setMicError(null);}catch{setActiveId(null);setMicError("Microfoon kon niet starten.");}
+  },[]);
+  const stop=useCallback(()=>{if(recRef.current){try{recRef.current.stop();}catch{}recRef.current=null;}setActiveId(null);},[]);
+  return{activeId,start,stop,supported,micError};
+}
+
+// ── Setup screen ──────────────────────────────────────────────────────────────
+function SetupScreen({onDone}){
+  const[ghToken,setGhToken]=useState('');
+  const[apiKey,setApiKey]=useState('');
+  const[ghLoading,setGhLoading]=useState(false);
+  const[ghErr,setGhErr]=useState('');
+  const[ghOk,setGhOk]=useState(false);
+
+  async function verifyGh(){
+    if(!ghToken.trim()){setGhErr('Voer een token in.');return;}
+    setGhLoading(true);setGhErr('');
+    try{
+      const r=await fetch('https://api.github.com/rate_limit',{headers:{'Authorization':`token ${ghToken.trim()}`}});
+      if(!r.ok)throw new Error('Ongeldige token — controleer de waarde.');
+      const scopes=(r.headers.get('x-oauth-scopes')||'').split(',').map(s=>s.trim()).filter(Boolean);
+      if(scopes.length>0&&!scopes.includes('gist'))throw new Error('Token mist "gist" scope — maak een nieuw token met alleen "gist" aangevinkt.');
+      setGhOk(true);setGhErr('');
+    }catch(e){setGhErr(e.message);}
+    setGhLoading(false);
+  }
+
+  function save(){
+    if(ghOk||!ghToken.trim())saveGhToken(ghOk?ghToken.trim():'');
+    if(apiKey.trim().startsWith('sk-ant-'))saveApiKey(apiKey.trim());
+    markSetupDone();onDone();
+  }
+
+  return(
+    <div className="setup">
+      <div style={{fontFamily:"'Playfair Display',serif",fontSize:30,color:"#f0e8d8",marginBottom:6,marginTop:10}}>Dagstart</div>
+      <div style={{fontSize:13,color:"#5a4a38",marginBottom:28,textAlign:"center"}}>Stel eenmalig in — alles is optioneel</div>
+
+      {/* GitHub */}
+      <div className="setup-card">
+        <div className="lbl-gh">GitHub Gist — sync tussen apparaten</div>
+        <div style={{fontSize:12,color:"#3a6a7a",marginTop:8,lineHeight:1.6}}>
+          Jouw data wordt opgeslagen in een privé Gist. Zo werkt het op alle apparaten.
+        </div>
+        <div style={{fontSize:11,color:"#2a5a6a",marginTop:10,lineHeight:1.7,background:"#0e1a20",padding:"10px 12px",borderRadius:8}}>
+          1. Ga naar <strong style={{color:"#6ab4d4"}}>github.com</strong> → Settings<br/>
+          2. Developer settings → Personal access tokens → Tokens (classic)<br/>
+          3. Generate new token → naam "Dagstart" → vink alleen <strong style={{color:"#6ab4d4"}}>gist</strong> aan<br/>
+          4. Kopieer de token en plak hieronder
+        </div>
+        <input className="setup-input" type="password" value={ghToken} onChange={e=>{setGhToken(e.target.value);setGhOk(false);setGhErr('');}} placeholder="ghp_…" onKeyDown={e=>e.key==="Enter"&&verifyGh()}/>
+        {ghErr&&<div style={{fontSize:12,color:"#e06060",marginTop:8}}>{ghErr}</div>}
+        {ghOk&&<div style={{fontSize:12,color:"#4a9e6a",marginTop:8}}>✓ Token geverifieerd</div>}
+        {!ghOk&&ghToken&&<button type="button" onClick={verifyGh} disabled={ghLoading} style={{marginTop:10,background:"transparent",border:"1px solid #1e4a5a",borderRadius:8,padding:"6px 14px",color:"#4a8aaa",cursor:"pointer",fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>{ghLoading?"Controleren…":"Verifieer token"}</button>}
+        <div className="setup-link">Geen GitHub-account? Je kunt ook zonder sync — data blijft dan op dit apparaat.</div>
+      </div>
+
+      {/* Anthropic */}
+      <div className="setup-card">
+        <div className="lbl" style={{color:"#8a7020"}}>Anthropic API — AI-features</div>
+        <div style={{fontSize:12,color:"#5a4a20",marginTop:8,lineHeight:1.6}}>
+          Voor verdiepingsvragen en wekelijkse samenvatting. Kost ~€5/jaar bij dagelijks gebruik.
+        </div>
+        <div style={{fontSize:11,color:"#4a3a18",marginTop:10,lineHeight:1.7,background:"#181208",padding:"10px 12px",borderRadius:8}}>
+          1. Ga naar <strong style={{color:"#c8a040"}}>console.anthropic.com</strong><br/>
+          2. API Keys → Create Key → naam "Dagstart"<br/>
+          3. Kopieer en plak hieronder
+        </div>
+        <input className="setup-input" type="password" value={apiKey} onChange={e=>setApiKey(e.target.value)} placeholder="sk-ant-api03-…"/>
+        {apiKey&&!apiKey.startsWith('sk-ant-')&&<div style={{fontSize:12,color:"#e06060",marginTop:8}}>Sleutel begint met sk-ant-…</div>}
+        <div className="setup-link">Geen sleutel? App werkt volledig zonder AI-features.</div>
+      </div>
+
+      <button type="button" className="setup-btn" onClick={save}>Opslaan en starten →</button>
+      <button type="button" className="setup-skip" onClick={()=>{markSetupDone();onDone();}}>Overslaan — later instellen via Stats</button>
+    </div>
+  );
+}
+
+// ── Error boundary ────────────────────────────────────────────────────────────
+class ErrorBoundary extends React.Component{
+  constructor(p){super(p);this.state={err:null};}
+  static getDerivedStateFromError(e){return{err:e};}
+  render(){
+    if(this.state.err)return(
+      <div style={{padding:"48px 24px",textAlign:"center",fontFamily:"'DM Sans',sans-serif",color:"#e08080",minHeight:"100vh",background:"#16130e",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+        <div style={{fontSize:20,marginBottom:10}}>Er ging iets mis</div>
+        <div style={{fontSize:13,color:"#6a5e4e",marginBottom:24,maxWidth:280,lineHeight:1.6}}>{this.state.err.message}</div>
+        <button onClick={()=>this.setState({err:null})} style={{background:"#c27820",border:"none",borderRadius:10,padding:"11px 22px",color:"#fff",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:14}}>Probeer opnieuw</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+function App(){
+  const[tab,setTab]=useState("vandaag");
+  const[entries,setEntries]=useState({});const[avondData,setAvondData]=useState({});
+  const[loading,setLoading]=useState(true);const[showSetup,setShowSetup]=useState(false);
+  const[streak,setStreak]=useState(0);const[mode,setMode]=useState("full");
+  const[answers,setAnswers]=useState({});const[saved,setSaved]=useState(false);
+  const[saving,setSaving]=useState(false);const[editing,setEditing]=useState(false);
+  const[step,setStep]=useState(0);const[light,setLight]=useState(false);
+  const[interview,setInterview]=useState(false);const[reisdag,setReisdag]=useState(false);
+  const[profiel,setProfiel]=useState({naam:"",werk:"",klachten:""});
+  const[syncState,setSyncState]=useState(null); // null | 'syncing' | 'ok' | 'error'
+  const[syncMsg,setSyncMsg]=useState('');
+  const[toast,setToast]=useState(null);
+  const importRef=useRef(null);const speech=useSpeech();
+  const today=new Date();const todayKey=fmt(today);const yKey=fmt(addDays(today,-1));
+  const isEvening=today.getHours()>=17;const hasTTS=!!window.speechSynthesis;
+
+  useEffect(()=>{
+    if(!isSetupDone()){setShowSetup(true);}
+    (async()=>{
+      const th=await sGet("theme");if(th==="light")setLight(true);
+      const pr=await sGet("profiel");if(pr)setProfiel(pr);
+      const keys=await sList();let allE={},allA={};
+      for(const k of keys){
+        if(/^\d{4}-\d{2}-\d{2}$/.test(k)){const v=await sGet(k);if(v)allE[k]=v;}
+        else if(/^\d{4}-\d{2}-\d{2}_pm$/.test(k)){const v=await sGet(k);if(v)allA[k.replace("_pm","")]=v;}
+      }
+      // Sync with GitHub on load
+      if(getGhToken()){
+        setSyncState('syncing');
+        const res=await syncAll(allE,allA,pr||{});
+        if(res.ok&&res.merged){
+          // Save merged data back to localStorage
+          for(const[k,v]of Object.entries(res.merged.entries))await sSet(k,v);
+          for(const[k,v]of Object.entries(res.merged.avond))await sSet(`${k}_pm`,v);
+          allE=res.merged.entries;allA=res.merged.avond;
+        }
+        setSyncState(res.ok?'ok':'error');setSyncMsg(res.msg);
+        setTimeout(()=>setSyncState(s=>s==='ok'?null:s),4000);
+      }
+      setEntries(allE);setAvondData(allA);setStreak(calcStreak(allE,todayKey));
+      if(allE[todayKey]){setAnswers(allE[todayKey].answers||{});setMode(allE[todayKey].mode||"full");setReisdag(allE[todayKey].reisdag||false);setSaved(true);}
+      setLoading(false);
+    })();
+  },[]);
+
+  useEffect(()=>{if(toast){const t=setTimeout(()=>setToast(null),3500);return()=>clearTimeout(t);}},[toast]);
+
+  function getQs(){const base=mode==="lite"?[...LITE_Q]:[...FULL_Q];if(isWknd(today))base.splice(base.length-1,0,WKND_Q);return base;}
+
+  async function handleSave(){
+    setSaving(true);
+    const entry={date:todayKey,mode,answers,reisdag,timestamp:Date.now()};
+    if(await sSet(todayKey,entry)){
+      const u={...entries,[todayKey]:entry};setEntries(u);setStreak(calcStreak(u,todayKey));setSaved(true);setEditing(false);
+      // Push to GitHub after save
+      if(getGhToken()){
+        setSyncState('syncing');
+        const res=await syncAll(u,avondData,profiel);
+        setSyncState(res.ok?'ok':'error');setSyncMsg(res.msg);
+        setTimeout(()=>setSyncState(s=>s==='ok'?null:s),3000);
+      }
+    }
+    setSaving(false);
+  }
+
+  async function saveAvond(date,data){
+    await sSet(`${date}_pm`,data);
+    const u={...avondData,[date]:data};setAvondData(u);
+    if(getGhToken()){setSyncState('syncing');const res=await syncAll(entries,u,profiel);setSyncState(res.ok?'ok':'error');setSyncMsg(res.msg);setTimeout(()=>setSyncState(s=>s==='ok'?null:s),3000);}
+  }
+
+  async function manualSync(){
+    if(!getGhToken())return;setSyncState('syncing');
+    const res=await syncAll(entries,avondData,profiel);
+    if(res.ok&&res.merged){
+      for(const[k,v]of Object.entries(res.merged.entries))await sSet(k,v);
+      for(const[k,v]of Object.entries(res.merged.avond))await sSet(`${k}_pm`,v);
+      setEntries(res.merged.entries);setAvondData(res.merged.avond);
+      setStreak(calcStreak(res.merged.entries,todayKey));
+    }
+    setSyncState(res.ok?'ok':'error');setSyncMsg(res.msg);
+  }
+
+  async function toggleTheme(){const n=!light;setLight(n);await sSet("theme",n?"light":"dark");}
+  async function saveProfiel(p){setProfiel(p);await sSet("profiel",p);}
+  function exportData(){const blob=new Blob([JSON.stringify({version:2,exported:new Date().toISOString(),entries,avond:avondData},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`dagstart_${todayKey}.json`;a.click();}
+  async function importData(e){const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());const ie=d.entries||{},ia=d.avond||{};for(const[k,v]of Object.entries(ie))if(/^\d{4}-\d{2}-\d{2}$/.test(k))await sSet(k,v);for(const[k,v]of Object.entries(ia))await sSet(`${k}_pm`,v);const u={...entries,...ie};setEntries(u);setAvondData(p=>({...p,...ia}));setStreak(calcStreak(u,todayKey));if(u[todayKey]){setAnswers(u[todayKey].answers||{});setSaved(true);}setToast({msg:`${Object.keys(ie).length} entries geïmporteerd ✓`,ok:true});}catch(err){setToast({msg:"Import mislukt: "+err.message,ok:false});}e.target.value="";}
+  function onIVComplete(iA){setAnswers(p=>({...p,...iA}));setInterview(false);setSaved(false);setEditing(true);setStep(getQs().findIndex(q=>q.type==="lichaam"));}
+
+  const TABS=[{id:"vandaag",icon:"○",lbl:"Vandaag"},{id:"gisteren",icon:"↺",lbl:"Gisteren"},{id:"week",icon:"▦",lbl:"Week"},{id:"stats",icon:"◈",lbl:"Stats"}];
+  const syncColor=syncState==='ok'?'#4a9e6a':syncState==='error'?'#e06040':'#4a8aaa';
+
+  if(showSetup)return <SetupScreen onDone={()=>setShowSetup(false)}/>;
+  if(loading)return <div className="ds" style={{alignItems:"center",justifyContent:"center",display:"flex",minHeight:"100vh"}}><span style={{color:"#6a5e4e",fontSize:12,letterSpacing:2,textTransform:"uppercase"}}>Laden…</span></div>;
+  if(interview)return <div className={`ds${light?" light":""}`}><InterviewMode questions={getQs()} existing={answers} onComplete={onIVComplete} onClose={()=>setInterview(false)}/></div>;
+
+  return(
+    <div className={`ds${light?" light":""}`}>
+      <div className="hdr">
+        <div>
+          <div className="lbl" style={{marginBottom:3}}>{DAYS[today.getDay()]}{reisdag&&saved?" 🗺":""}</div>
+          <div className="serif" style={{fontSize:22,fontWeight:600,lineHeight:1.1}}>{today.getDate()} {MONTHS[today.getMonth()]}</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5}}>
+          <button type="button" className="tbtn" onClick={toggleTheme}><span>{light?"🌙":"☀"}</span><span style={{fontSize:11}}>{light?"Donker":"Licht"}</span></button>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            {getGhToken()&&<div style={{display:"flex",alignItems:"center",gap:4}}>
+              {syncState==='syncing'?<span className="spinning" style={{fontSize:11,color:"#4a8aaa"}}>↑↓</span>:<div className="sync-dot" style={{background:syncState?syncColor:"var(--br)"}}/>}
+              {syncState&&<span style={{fontSize:10,color:syncColor}}>{syncState==='syncing'?"Sync…":syncState==='ok'?"Gesync":syncMsg.slice(0,20)}</span>}
+            </div>}
+            <div style={{display:"flex",alignItems:"baseline",gap:4}}><div className="serif" style={{fontSize:24,fontWeight:600,color:"var(--a2)",lineHeight:1}}>{streak}</div><div className="lbl">{streak===1?"dag":"dagen"}</div></div>
+          </div>
+        </div>
+      </div>
+      <div className="con">
+        {tab==="vandaag"&&<VandaagTab mode={mode} setMode={m=>{setMode(m);setStep(0);if(saved)setEditing(true);}} reisdag={reisdag} setReisdag={r=>{setReisdag(r);if(saved)setEditing(true);}} questions={getQs()} answers={answers} setAnswers={setAnswers} saved={saved} editing={editing} onStartEdit={()=>{setEditing(true);setStep(0);}} saving={saving} onSave={handleSave} step={step} setStep={setStep} speech={speech} hasTTS={hasTTS} light={light} onStartIV={()=>setInterview(true)} avond={avondData[todayKey]} onSaveAvond={d=>saveAvond(todayKey,d)} isEvening={isEvening} profiel={profiel} hasKey={!!getApiKey()}/>}
+        {tab==="gisteren"&&<div style={{padding:"16px 16px 0"}}>{entries[yKey]?<EntryView entry={entries[yKey]} label="Gisteren" avond={avondData[yKey]}/>:<div className="empty">Geen dagstart voor gisteren gevonden.</div>}</div>}
+        {tab==="week"&&<WeekTab entries={entries} avond={avondData} today={today} todayKey={todayKey} profiel={profiel} hasKey={!!getApiKey()}/>}
+        {tab==="stats"&&<StatsTab entries={entries} avond={avondData} streak={streak} today={today} todayKey={todayKey} entryCount={Object.keys(entries).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).length} onExport={exportData} onImport={()=>importRef.current?.click()} profiel={profiel} onSaveProfiel={saveProfiel} hasKey={!!getApiKey()} hasGh={!!getGhToken()} syncState={syncState} syncMsg={syncMsg} onSync={manualSync} onOpenSetup={()=>setShowSetup(true)}/>}
+      </div>
+      {toast&&<div style={{position:"fixed",bottom:88,left:"50%",transform:"translateX(-50%)",background:toast.ok?"#1a3d2a":"#3d1a0a",border:`1px solid ${toast.ok?"#2a6a3a":"#6a3020"}`,borderRadius:10,padding:"10px 18px",fontSize:13,color:toast.ok?"#c8e8d0":"#e8a0a0",zIndex:50,whiteSpace:"nowrap",boxShadow:"0 4px 16px rgba(0,0,0,.4)",pointerEvents:"none"}}>{toast.msg}</div>}
+      <input ref={importRef} type="file" accept=".json" style={{display:"none"}} onChange={importData}/>
+      <div className="nav">{TABS.map(t=><button type="button" key={t.id} className="nb" style={{color:tab===t.id?"var(--a2)":"var(--mu)"}} onClick={()=>setTab(t.id)}><span style={{fontSize:16,lineHeight:1}}>{t.icon}</span><span style={{fontSize:10,letterSpacing:.5}}>{t.lbl}</span></button>)}</div>
+    </div>
+  );
+}
+
+// ── VandaagTab ────────────────────────────────────────────────────────────────
+function VandaagTab({mode,setMode,reisdag,setReisdag,questions,answers,setAnswers,saved,editing,onStartEdit,saving,onSave,step,setStep,speech,hasTTS,light,onStartIV,avond,onSaveAvond,isEvening,profiel,hasKey}){
+  const showForm=!saved||editing;const q=questions[step];const isLast=step===questions.length-1;
+  function canAdv(){if(!q)return false;if(q.type==="lichaam"){const l=answers.lichaam||{},sp=l.sporten||[];const spOk=sp.length===0||sp.every(s=>s.sport==="Geen"||(s.sport&&s.duur&&s.intensiteit));const gOk=l.garmin?.gedragen===false||l.garmin?.gedragen==null||(l.garmin?.gedragen===true&&l.garmin?.bodyBattery!=null&&l.garmin?.slaapscore!=null&&l.garmin?.hrvStatus);return spOk&&!!l.pijn&&!!l.oefeningen&&gOk&&!!l.slaap?.subjectief;}return(answers[q.id]||"").trim().length>0;}
+  if(!showForm)return(<div style={{padding:"16px 16px 0"}}><CompletedView questions={questions} answers={answers} onEdit={onStartEdit} light={light} reisdag={reisdag}/><AvondCheckIn avond={avond} onSave={onSaveAvond} isEvening={isEvening}/>{hasKey&&<ChatPanel questions={questions} answers={answers} profiel={profiel}/>}</div>);
+  return(
+    <div style={{padding:"18px 18px 0"}}>
+      {step===0&&(<>
+        {(speech.supported||hasTTS)&&<button type="button" className="ivl" onClick={onStartIV}><span style={{fontSize:20}}>🎙</span>Interview modus — handen vrij</button>}
+        <div className="mt">{["lite","full"].map(m=><button type="button" key={m} className="mb" onClick={()=>setMode(m)} style={{background:mode===m?(m==="lite"?light?"#deeef8":"#1e3a54":light?"#fdf0e0":"#3d2a0a"):"var(--card)",color:mode===m?(m==="lite"?light?"#1a5a8a":"#6bb3e8":light?"#c27820":"#d4944a"):"var(--mu)",borderColor:mode===m?(m==="lite"?light?"#a8d0e8":"#2a5a84":light?"#e8c080":"#6a4018"):"var(--br)"}}>{m==="lite"?"Lite":"Full"}</button>)}</div>
+        <div style={{display:"flex",gap:8,marginBottom:16}}><button type="button" className={`chip reis${reisdag?" on":""}`} onClick={()=>setReisdag(!reisdag)}>🗺 Reisdag</button>{reisdag&&<span style={{fontSize:12,color:"#5a9a6a",alignSelf:"center"}}>Sport en vragen aangepast</span>}</div>
+      </>)}
+      <div className="prog"><div className="pf" style={{width:`${(step/questions.length)*100}%`}}/></div>
+      {step>0&&<button type="button" className="btn-bk" onClick={()=>setStep(s=>s-1)}>← Terug</button>}
+      <div className="sn">{step+1} van {questions.length}</div>
+      {q.type==="text"?<TextStep q={q} value={answers[q.id]||""} onChange={v=>setAnswers(p=>({...p,[q.id]:v}))} speech={speech}/>:<LichaamStep value={answers.lichaam||{}} onChange={v=>setAnswers(p=>({...p,lichaam:v}))} light={light} reisdag={reisdag}/>}
+      <button type="button" className="btn" disabled={saving||!canAdv()} onClick={()=>isLast?onSave():setStep(s=>s+1)}>{saving?"Opslaan…":isLast?"Afronden ✓":"Volgende →"}</button>
+      {q.type==="text"&&!isLast&&<div style={{textAlign:"center",marginTop:10}}><button type="button" onClick={()=>setStep(s=>s+1)} style={{background:"none",border:"none",color:"var(--su)",fontSize:13,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Sla over</button></div>}
+      <div style={{height:24}}/>
+    </div>
+  );
+}
+
+function TextStep({q,value,onChange,speech}){
+  const ref=useRef(null);useEffect(()=>{ref.current?.focus();},[q.id]);
+  const isActive=speech.activeId===q.id;
+  return(<>
+    <div className="sq serif">{q.q}</div><div className="sh">{q.hint}</div>
+    <div className="card" style={{marginBottom:0}}>
+      <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+        <textarea ref={ref} className="ta" value={value} onChange={e=>onChange(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")e.stopPropagation();}} placeholder="Schrijf hier…" style={{flex:1}} rows={4}/>
+        {speech.supported&&<button type="button" onClick={()=>isActive?speech.stop():speech.start(q.id,t=>onChange((value?value+" ":"")+t))} style={{background:isActive?"#c27820":"transparent",border:`1px solid ${isActive?"#c27820":"var(--cb)"}`,borderRadius:8,padding:"8px 10px",cursor:"pointer",fontSize:14,flexShrink:0,color:isActive?"#fff":"var(--mu)"}}>{isActive?"⏹":"🎙"}</button>}
+      </div>
+      {isActive&&<div style={{fontSize:11,color:"var(--a2)",marginTop:8,letterSpacing:1,textTransform:"uppercase"}}>● Luistert…</div>}
+    </div>
+    {speech.micError&&<div style={{background:"#2a1010",border:"1px solid #5a2020",borderRadius:10,padding:"10px 12px",fontSize:12,color:"#e08080",marginTop:8,lineHeight:1.5}}>⚠ {speech.micError}</div>}
+  </>);
+}
+
+function LichaamStep({value,onChange,light,reisdag}){
+  const sporten=value.sporten||[],garmin=value.garmin||{gedragen:null},slaap=value.slaap||{};
+  const sportOpts=reisdag?SPORT_REIS:SPORT_STD;
+  function upSp(i,k,v){if(k==="sport"&&v==="Geen"){onChange({...value,sporten:[{sport:"Geen",duur:"",intensiteit:""}]});return;}const u=[...sporten];u[i]={...u[i],[k]:v};onChange({...value,sporten:u});}
+  function addSp(){onChange({...value,sporten:[...sporten.filter(s=>s.sport!=="Geen"),{sport:"",duur:"",intensiteit:""}]});}
+  function rmSp(i){onChange({...value,sporten:sporten.filter((_,j)=>j!==i)});}
+  function setL(k,v){onChange({...value,[k]:v});}
+  function setG(k,v){onChange({...value,garmin:{...garmin,[k]:v}});}
+  function setSlaap(k,v){onChange({...value,slaap:{...slaap,[k]:v}});}
+  const hasGeen=sporten.some(s=>s.sport==="Geen");
+  return(<>
+    <div className="sq serif">Hoe voelde mijn lichaam?</div><div className="sh">Sport van gisteren · Pijn · Slaap · Garmin</div>
+    <div style={{marginBottom:16}}>
+      <div className="lbl" style={{marginBottom:4}}>Sport gedaan gisteren</div>
+      <div style={{fontSize:11,color:"var(--mu)",marginBottom:10}}>{reisdag?"Reisdag — beweging onderweg":"Wat heb je gisteren gedaan?"}</div>
+      {sporten.length===0&&<div style={{color:"var(--su)",fontSize:13,marginBottom:10}}>Nog niets toegevoegd.</div>}
+      {sporten.map((s,i)=>(
+        <div key={i} className="sp-card">
+          {sporten.length>1&&<button type="button" className="rb" onClick={()=>rmSp(i)}>✕</button>}
+          <div className="lbl" style={{marginBottom:8}}>Wat</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:s.sport&&s.sport!=="Geen"?12:0}}>{sportOpts.map(o=><button type="button" key={o} className={`chip sm${s.sport===o?" on":""}`} onClick={()=>upSp(i,"sport",o)}>{o}</button>)}</div>
+          {s.sport&&s.sport!=="Geen"&&(<>
+            <div className="lbl" style={{marginBottom:8,marginTop:12}}>Duur</div>
+            <div style={{display:"flex",gap:6,marginBottom:12}}>{DUUR.map(d=><button type="button" key={d} className={`chip sm${s.duur===d?" on":""}`} onClick={()=>upSp(i,"duur",d)}>{d}</button>)}</div>
+            <div className="lbl" style={{marginBottom:8}}>Intensiteit</div>
+            <div style={{display:"flex",gap:6}}>{INT.map(n=><button type="button" key={n} className={`chip sm ci-${n[0]}${s.intensiteit===n?" on":""}`} onClick={()=>upSp(i,"intensiteit",n)}>{n}</button>)}</div>
+          </>)}
+        </div>
+      ))}
+      {!hasGeen&&sporten.length<4&&<button type="button" className="asp" onClick={addSp}>+ Nog een sport toevoegen</button>}
+      {sporten.length===0&&<button type="button" className="asp" onClick={addSp} style={{marginTop:0}}>+ Sport toevoegen</button>}
+    </div>
+    {reisdag&&<div style={{marginBottom:16}}><div className="lbl" style={{marginBottom:8}}>Locatie vandaag</div><div className="card" style={{marginBottom:0}}><input type="text" value={value.locatie||""} onChange={e=>setL("locatie",e.target.value)} placeholder="Bijv. Hangzhou, Huangshan…" style={{width:"100%",background:"transparent",border:"none",color:"var(--tx2)",fontFamily:"'DM Sans',sans-serif",fontSize:15,outline:"none"}}/></div></div>}
+    <div style={{marginBottom:18}}><div className="lbl" style={{marginBottom:10}}>Pijn of spanning in heup / rug (nu)</div><div style={{display:"flex",gap:6}}>{[1,2,3,4,5].map(n=><button type="button" key={n} className={`pbn${value.pijn===n?" on":""}`} onClick={()=>setL("pijn",n)} style={{background:value.pijn===n?PIJN_C[n]:"transparent",borderColor:value.pijn===n?PIJN_C[n]:"var(--br)"}}><div style={{fontSize:16,marginBottom:1}}>{n}</div><div style={{fontSize:9,color:value.pijn===n?"#fff":"var(--su)"}}>{PIJN_L[n]}</div></button>)}</div></div>
+    <div style={{marginBottom:18}}><div className="lbl" style={{marginBottom:10}}>Rustoefeningen / fysio gedaan</div><div style={{display:"flex",gap:8}}>{OEF.map(o=><button type="button" key={o} className={`obn${value.oefeningen===o?" on":""}`} onClick={()=>setL("oefeningen",o)}>{o}</button>)}</div></div>
+    <div className="slaap-box">
+      <div className="lbl-s" style={{marginBottom:12}}>Slaap afgelopen nacht</div>
+      <div style={{marginBottom:14}}><div className="lbl" style={{marginBottom:8,color:"#4a8aa8"}}>Hoe voelde je slaap?</div><div style={{display:"flex",gap:6}}>{[1,2,3,4,5].map(n=><button type="button" key={n} className={`slaap-btn${slaap.subjectief===n?" on":""}`} onClick={()=>setSlaap("subjectief",n)} style={{background:slaap.subjectief===n?SLAAP_C[n]:"transparent",borderColor:slaap.subjectief===n?SLAAP_C[n]:"#1e3040"}}><div style={{fontSize:15,marginBottom:2}}>{["😴","😕","😐","🙂","😊"][n-1]}</div><div style={{fontSize:9,color:slaap.subjectief===n?"#fff":"#4a8aa8"}}>{SLAAP_L[n]}</div></button>)}</div></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>{[["Bedtijd","bedtijd"],["Wakker om","wakkertijd"]].map(([lbl,key])=><div key={key}><div className="lbl" style={{marginBottom:6,color:"#4a8aa8"}}>{lbl}</div><input type="time" value={slaap[key]||""} onChange={e=>setSlaap(key,e.target.value)} style={{width:"100%",background:"transparent",border:"none",borderBottom:"1px solid #1e3040",color:"#7ac4e8",fontFamily:"'DM Sans',sans-serif",fontSize:15,outline:"none",padding:"6px 0",colorScheme:"dark"}}/></div>)}</div>
+      <div className="lbl" style={{marginBottom:6,color:"#4a8aa8"}}>Optionele notitie</div>
+      <textarea className="ta" value={slaap.notitie||""} onChange={e=>setSlaap("notitie",e.target.value)} placeholder="Wakker geworden? Onrustig?" style={{minHeight:40,borderTop:"1px solid #1e3040",paddingTop:8,color:"#a0c8d8"}}/>
+    </div>
+    <div className="gar">
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}><div className="lbl-g">Garmin 255</div><div className="tpill"><button type="button" className={garmin.gedragen===true?"on":""} onClick={()=>setG("gedragen",true)}>Gedragen</button><button type="button" className={garmin.gedragen===false?"on":""} onClick={()=>setG("gedragen",false)}>Niet</button></div></div>
+      {garmin.gedragen===true&&(<>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>{[["Body Battery","bodyBattery"],["Slaapscore","slaapscore"]].map(([lbl,key])=><div key={key}><div className="lbl-g" style={{marginBottom:8}}>{lbl}</div><input type="number" min="0" max="100" className="ni" placeholder="—" value={garmin[key]??""} onChange={e=>setG(key,e.target.value===""?null:Math.min(100,Math.max(0,Number(e.target.value))))}/><div style={{fontSize:10,color:"var(--gc)",textAlign:"center"}}>0–100</div></div>)}</div>
+        <div className="lbl-g" style={{marginBottom:10}}>HRV Status</div>
+        <div style={{display:"flex",gap:8}}>{HRV.map(h=><button type="button" key={h.v} onClick={()=>setG("hrvStatus",h.v)} style={{flex:1,padding:"10px 6px",borderRadius:10,border:"1px solid",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500,cursor:"pointer",background:garmin.hrvStatus===h.v?h.dD:"transparent",borderColor:garmin.hrvStatus===h.v?h.bD:"var(--gr)",color:garmin.hrvStatus===h.v?h.c:"var(--gl)"}}>{h.v}</button>)}</div>
+      </>)}
+      {garmin.gedragen==null&&<div style={{fontSize:12,color:"var(--gc)",textAlign:"center",padding:"8px 0"}}>Heb je de Garmin gedragen?</div>}
+    </div>
+    <div className="fys"><div className="lbl-f" style={{marginBottom:8}}>Notitie voor fysio (optioneel)</div><textarea className="ta" value={value.fysio||""} onChange={e=>setL("fysio",e.target.value)} placeholder="Iets opvallends voor je volgende sessie…" style={{minHeight:50}}/></div>
+  </>);
+}
+
+function AvondCheckIn({avond,onSave,isEvening}){
+  const[open,setOpen]=useState(false);const[pijn,setPijn]=useState(avond?.pijn||null);const[note,setNote]=useState(avond?.note||"");const[done,setDone]=useState(!!avond);
+  useEffect(()=>{if(avond){setPijn(avond.pijn||null);setNote(avond.note||"");setDone(true);}},[avond]);
+  async function save(){await onSave({pijn,note,timestamp:Date.now()});setDone(true);setOpen(false);}
+  return(<div className="avond-card"><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:open||done?10:0}}><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:16}}>🌙</span><div><div className="lbl-a">Avond check-in</div>{done&&!open&&<div style={{fontSize:12,color:"#4a9e6a",marginTop:2}}>Pijn: {pijn?PIJN_L[pijn]:"—"}</div>}</div></div><button type="button" onClick={()=>setOpen(o=>!o)} style={{background:"transparent",border:"1px solid #2a4a38",borderRadius:8,padding:"5px 12px",color:"#4a9e6a",cursor:"pointer",fontSize:12,fontFamily:"'DM Sans',sans-serif"}}>{done&&!open?"Bewerken":open?"Sluiten":"Inchecken"}</button></div>{open&&(<><div className="lbl" style={{marginBottom:8,color:"#5a9a6a"}}>Pijn nu</div><div style={{display:"flex",gap:6,marginBottom:14}}>{[1,2,3,4,5].map(n=><button type="button" key={n} className={`pbn${pijn===n?" on":""}`} onClick={()=>setPijn(n)} style={{background:pijn===n?PIJN_C[n]:"transparent",borderColor:pijn===n?PIJN_C[n]:"#2a4a38"}}><div style={{fontSize:16,marginBottom:1}}>{n}</div><div style={{fontSize:9,color:pijn===n?"#fff":"#4a7a5a"}}>{PIJN_L[n]}</div></button>)}</div><textarea className="ta" value={note} onChange={e=>setNote(e.target.value)} placeholder="Hoe voelt het vergeleken met vanochtend?" style={{minHeight:50,borderTop:"1px solid #2a4a38",paddingTop:8,marginBottom:12,color:"#c8e8d0"}}/><button type="button" onClick={save} disabled={!pijn} style={{width:"100%",padding:"12px",borderRadius:12,border:"none",background:pijn?"#2a6a3a":"#1a2a1a",color:pijn?"#c8e8d0":"#4a6a4a",fontFamily:"'DM Sans',sans-serif",fontSize:14,cursor:pijn?"pointer":"default"}}>Avond opslaan ✓</button></>)}{!open&&!done&&<div style={{fontSize:12,color:"#3a6a4a",lineHeight:1.5,marginTop:4}}>{isEvening?"Hoe voelt je lichaam aan het einde van de dag?":"Vanavond beschikbaar na 17:00."}</div>}</div>);
+}
+
+function ChatPanel({questions,answers,profiel}){
+  const[open,setOpen]=useState(false);const[msgs,setMsgs]=useState([]);const[input,setInput]=useState("");const[thinking,setThinking]=useState(false);const[done,setDone]=useState(false);const ref=useRef(null);
+  useEffect(()=>{ref.current?.scrollIntoView({behavior:"smooth"});},[msgs,thinking]);
+  async function start(){setOpen(true);setThinking(true);try{const r=await callApi([{role:"user",content:buildText(questions,answers)}],buildChatSys(profiel));setMsgs([{role:"assistant",content:r}]);}catch(e){setMsgs([{role:"assistant",content:e.message==="no-key"?"Geen API-sleutel — stel in via Stats.":"Verbindingsfout."}]);}setThinking(false);}
+  async function send(){if(!input.trim()||thinking||done)return;const t=input.trim();setInput("");const h=[{role:"user",content:buildText(questions,answers)}];msgs.forEach((m,i)=>{if(i===0){h.push({role:"assistant",content:m.content});return;}h.push({role:m.role,content:m.content});});h.push({role:"user",content:t});const n=[...msgs,{role:"user",content:t}];setMsgs(n);setThinking(true);try{const r=await callApi(h,buildChatSys(profiel));const u=[...n,{role:"assistant",content:r}];setMsgs(u);if(u.filter(m=>m.role==="assistant").length>=10)setDone(true);}catch{setMsgs(m=>[...m,{role:"assistant",content:"Verbindingsfout."}]);}setThinking(false);}
+  if(!open)return <div style={{marginBottom:16}}><button type="button" onClick={start} style={{width:"100%",padding:"13px 16px",borderRadius:12,background:"transparent",border:"1px solid var(--cb)",color:"var(--su)",fontFamily:"'DM Sans',sans-serif",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:10}}><span style={{fontSize:18}}>◎</span>Verdiep je antwoorden</button></div>;
+  return(<div className="card" style={{marginBottom:16}}><div className="lbl" style={{marginBottom:14,display:"flex",alignItems:"center",gap:8}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--a2)",display:"inline-block"}}/>Verdieping</div><div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:12}}>{msgs.map((m,i)=><div key={i} className={m.role==="assistant"?"cai":"cme"}>{m.content}</div>)}{thinking&&<div className="cai"><div className="dots"><span/><span/><span/></div></div>}{done&&<div style={{textAlign:"center",color:"var(--mu)",fontSize:12,padding:"8px 0"}}>— gesprek afgerond —</div>}<div ref={ref}/></div>{!done&&<div style={{display:"flex",gap:8,alignItems:"flex-end"}}><textarea className="cin" placeholder="Antwoord… (Enter = verstuur)" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} rows={1}/><button type="button" className="csnd" onClick={send} disabled={thinking||!input.trim()}>→</button></div>}</div>);
+}
+
+function CompletedView({questions,answers,onEdit,light,reisdag}){
+  return(<div><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}><div className="dot" style={{background:"#4a9e6a"}}/><span style={{fontSize:13,color:"#4a9e6a"}}>Dagstart voltooid{reisdag?" 🗺":""}</span><button type="button" className="edb" onClick={onEdit}>Bewerken</button></div>{questions.map(q=>{if(q.type==="lichaam")return <LichaamCard key="lich" l={answers.lichaam||{}} light={light}/>;return(<div key={q.id} className="card"><div className="serif" style={{fontSize:13,color:"var(--mu)",marginBottom:8}}>{q.q}</div><div style={{fontSize:14,color:"var(--tx2)",lineHeight:1.65,whiteSpace:"pre-wrap"}}>{answers[q.id]||<em style={{color:"var(--di)"}}>Niet ingevuld</em>}</div></div>);})}</div>);
+}
+
+function LichaamCard({l}){
+  const sp=l.sporten||[],g=l.garmin,sl=l.slaap,hs=herstelScore(l);
+  return(<div className="card"><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}><div className="lbl">Lichaam</div>{hs!==null&&<div style={{textAlign:"right"}}><div className="serif" style={{fontSize:22,fontWeight:600,color:scoreColor(hs),lineHeight:1}}>{hs}</div><div style={{fontSize:9,color:"var(--mu)",letterSpacing:1}}>HERSTEL</div></div>}</div><div style={{marginBottom:12}}><div className="lbl" style={{marginBottom:6,fontSize:9}}>Sport gisteren</div>{sp.length>0?sp.map((s,i)=><div key={i} style={{marginBottom:4}}><div style={{fontSize:14,color:"var(--tx)",fontWeight:500}}>{s.sport}</div>{s.sport!=="Geen"&&<div style={{display:"flex",gap:6,marginTop:2}}>{s.duur&&<span style={{fontSize:12,color:"var(--mu)",background:"var(--pb)",padding:"2px 8px",borderRadius:10}}>{s.duur}</span>}{s.intensiteit&&<span style={{fontSize:12,color:s.intensiteit==="Laag"?"#4a9e6a":s.intensiteit==="Hoog"?"#e06040":"#d4944a",background:"var(--pb)",padding:"2px 8px",borderRadius:10}}>{s.intensiteit}</span>}</div>}</div>):<div style={{fontSize:14,color:"var(--di)",fontStyle:"italic"}}>Geen sport</div>}</div>{l.locatie&&<div style={{fontSize:13,color:"#5a9a6a",marginBottom:10}}>📍 {l.locatie}</div>}<div style={{borderTop:"1px solid var(--br)",paddingTop:12,marginBottom:10}}>{[{lbl:"Pijn/spanning",val:l.pijn?`${l.pijn} — ${PIJN_L[l.pijn]}`:null},{lbl:"Rustoefeningen",val:l.oefeningen}].map(r=><div key={r.lbl} style={{display:"flex",gap:12,alignItems:"baseline",marginBottom:6}}><span style={{fontSize:12,color:"var(--mu)",width:110,flexShrink:0}}>{r.lbl}</span><span style={{fontSize:14,color:r.val?"var(--tx2)":"var(--di)",fontStyle:r.val?"normal":"italic"}}>{r.val||"niet ingevuld"}</span></div>)}</div>{sl&&<div style={{borderTop:"1px solid #1e3040",paddingTop:12,marginBottom:10}}><div className="lbl-s" style={{marginBottom:8}}>Slaap</div><div style={{display:"flex",gap:16,alignItems:"center",flexWrap:"wrap"}}>{sl.subjectief&&<div style={{textAlign:"center"}}><div style={{fontSize:20}}>{["😴","😕","😐","🙂","😊"][sl.subjectief-1]}</div><div style={{fontSize:10,color:SLAAP_C[sl.subjectief],marginTop:2}}>{SLAAP_L[sl.subjectief]}</div></div>}{(sl.bedtijd||sl.wakkertijd)&&<div style={{fontSize:13,color:"var(--gn)"}}>{sl.bedtijd||"—"} → {sl.wakkertijd||"—"}</div>}{g?.gedragen&&g?.slaapscore!=null&&<div style={{textAlign:"center"}}><div className="serif" style={{fontSize:18,fontWeight:600,color:"var(--gn)"}}>{g.slaapscore}</div><div style={{fontSize:9,color:"var(--gc)"}}>GARMIN</div></div>}</div>{sl.notitie&&<div style={{fontSize:12,color:"var(--tx2)",marginTop:8,lineHeight:1.5,fontStyle:"italic"}}>{sl.notitie}</div>}</div>}{g&&<div style={{borderTop:"1px solid var(--gr)",paddingTop:12,marginBottom:l.fysio?12:0}}><div className="lbl-g" style={{marginBottom:8}}>Garmin</div>{g.gedragen===false?<div style={{fontSize:13,color:"var(--gc)",fontStyle:"italic"}}>Niet gedragen</div>:<div style={{display:"flex",gap:20}}>{[{lbl:"Body Battery",val:g.bodyBattery!=null?String(g.bodyBattery):null},{lbl:"HRV",val:g.hrvStatus}].map(r=><div key={r.lbl} style={{textAlign:"center"}}><div className="serif" style={{fontSize:20,fontWeight:600,color:r.lbl==="HRV"?(HRV.find(h=>h.v===r.val)?.c||"var(--gn)"):"var(--gn)"}}>{r.val||"—"}</div><div style={{fontSize:10,color:"var(--gc)",marginTop:2}}>{r.lbl}</div></div>)}</div>}</div>}{l.fysio&&<div style={{borderTop:"1px solid var(--fr)",paddingTop:12,marginTop:12}}><div className="lbl-f" style={{marginBottom:6}}>Fysio-notitie</div><div style={{fontSize:13,color:"var(--tx2)",lineHeight:1.6,whiteSpace:"pre-wrap"}}>{l.fysio}</div></div>}</div>);
+}
+
+function EntryView({entry,label,avond}){
+  if(!entry)return <div className="empty">Geen dagstart voor {label?.toLowerCase()||"deze dag"}.</div>;
+  const qs=[...(entry.mode==="lite"?LITE_Q:FULL_Q)];if(entry.answers?.weekend)qs.splice(qs.length-1,0,WKND_Q);
+  return(<div><div className="lbl" style={{marginBottom:14}}>{label}{entry.reisdag?" 🗺":""} · {entry.mode==="lite"?"Lite":"Full"}</div>{qs.map(q=>{if(q.type==="lichaam")return <LichaamCard key="lich" l={entry.answers?.lichaam||{}}/>;return(<div key={q.id} className="card"><div className="serif" style={{fontSize:13,color:"var(--mu)",marginBottom:8}}>{q.q}</div><div style={{fontSize:14,color:"var(--tx2)",lineHeight:1.65,whiteSpace:"pre-wrap"}}>{entry.answers?.[q.id]||<em style={{color:"var(--di)"}}>Niet ingevuld</em>}</div></div>);})}{avond&&<div style={{background:"var(--gb)",border:"1px solid var(--gr)",borderRadius:14,padding:14,marginTop:4}}><div className="lbl-a" style={{marginBottom:8}}>🌙 Avond check-in</div>{avond.pijn&&<div style={{fontSize:14,color:"#c8e8d0"}}>Pijn: {avond.pijn} — {PIJN_L[avond.pijn]}</div>}{avond.note&&<div style={{fontSize:13,color:"var(--tx2)",marginTop:6,whiteSpace:"pre-wrap"}}>{avond.note}</div>}</div>}</div>);
+}
+
+function WeekTab({entries,avond,today,todayKey,profiel,hasKey}){
+  const[expanded,setExpanded]=useState(null);const[summary,setSummary]=useState(null);const[sumLoading,setSumLoading]=useState(false);
+  const days=Array.from({length:7},(_,i)=>{const d=addDays(today,-i);return{d,key:fmt(d)};}).reverse();
+  async function genSummary(){setSumLoading(true);const txt=days.map(({d,key})=>{const e=entries[key];if(!e)return`${DAYS[d.getDay()]}: geen entry`;const l=e.answers?.lichaam||{},sl=l.slaap,a=avond[key],hs=herstelScore(l);return`${DAYS[d.getDay()]}: ${sportLabel(l.sporten)} | pijn:${l.pijn?PIJN_L[l.pijn]:"?"} | oef:${l.oefeningen||"?"} | slaap:${sl?.subjectief?SLAAP_L[sl.subjectief]:"?"}${sl?.bedtijd?"/"+sl.bedtijd:""} | herstel:${hs??"-"}${a?` | avond pijn:${PIJN_L[a.pijn]}`:""}`}).join("\n");try{const r=await callApi([{role:"user",content:txt}],buildSumSys(profiel),400);setSummary(r);}catch(e){setSummary(e.message==="no-key"?"Geen API-sleutel.":"Verbindingsfout.");}setSumLoading(false);}
+  return(<div style={{padding:"16px 16px 0"}}>{hasKey&&<div className="sumc"><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:summary?12:0}}><div className="lbl-g">Wekelijkse observatie</div><button type="button" onClick={genSummary} disabled={sumLoading} style={{background:"transparent",border:"1px solid var(--gr)",color:"var(--gl)",borderRadius:8,padding:"5px 12px",cursor:"pointer",fontSize:12,fontFamily:"'DM Sans',sans-serif"}}>{sumLoading?<span className="dots" style={{display:"inline-flex"}}><span/><span/><span/></span>:"Genereer →"}</button></div>{summary&&<div style={{fontSize:13,color:"var(--tx2)",lineHeight:1.7,whiteSpace:"pre-wrap",marginTop:10}}>{summary}</div>}{!summary&&!sumLoading&&<div style={{fontSize:12,color:"var(--gc)",marginTop:8}}>AI-observatie van jouw week.</div>}</div>}{days.map(({d,key})=>{const e=entries[key],isT=key===todayKey,isE=expanded===key,l=e?.answers?.lichaam,sl=l?.slaap,a=avond[key],hs=herstelScore(l);return(<div key={key}><button type="button" className="wbtn" style={{borderColor:isT?"var(--a2)":"var(--br)",background:isT?"var(--wh)":"var(--card)"}} onClick={()=>setExpanded(isE?null:key)}><div className="dot" style={{background:e?"#4a9e6a":"var(--br)"}}/><div style={{flex:1}}><div style={{fontSize:14,color:"var(--tx)",fontWeight:500}}>{DAYS[d.getDay()]}{isT?" (vandaag)":""}{e?.reisdag?" 🗺":""}</div><div style={{fontSize:11,color:"var(--mu)",marginTop:2}}>{e?sportLabel(l?.sporten):"geen dagstart"}{sl?.subjectief?` · ${["😴","😕","😐","🙂","😊"][sl.subjectief-1]}`:""}{a?" · 🌙":""}</div></div>{hs!==null&&<div style={{fontSize:13,fontWeight:600,color:scoreColor(hs),marginRight:6,minWidth:24,textAlign:"center"}}>{hs}</div>}<div style={{fontSize:11,color:"var(--mu)"}}>{isE?"▲":"▼"}</div></button>{isE&&<div className="wbody">{e?<div style={{padding:"8px 4px"}}><EntryView entry={e} label={DAYS[d.getDay()]} avond={a}/></div>:<div className="empty" style={{paddingTop:24,paddingBottom:24}}>Geen dagstart.</div>}</div>}</div>);})}</div>);
+}
+
+function StatsTab({entries,avond,streak,today,todayKey,entryCount,onExport,onImport,profiel,onSaveProfiel,hasKey,hasGh,syncState,syncMsg,onSync,onOpenSetup}){
+  const[fysioOpen,setFysioOpen]=useState(false);const[profielOpen,setProfielOpen]=useState(false);const[draft,setDraft]=useState(profiel);const[copied,setCopied]=useState(false);
+  useEffect(()=>setDraft(profiel),[profiel]);
+  const last30=Array.from({length:30},(_,i)=>{const d=addDays(today,-(29-i));const k=fmt(d);return{d,key:k,entry:entries[k]};});
+  const thisWeek=Array.from({length:7},(_,i)=>entries[fmt(addDays(today,-i))]?1:0).reduce((a,b)=>a+b,0);
+  const filled=last30.filter(x=>x.entry).length,lite=last30.filter(x=>x.entry?.mode==="lite").length,full=last30.filter(x=>x.entry?.mode==="full").length;
+  const trend14=Array.from({length:14},(_,i)=>{const d=addDays(today,-(13-i));const k=fmt(d);const l=entries[k]?.answers?.lichaam;return{d,hs:herstelScore(l),slSub:l?.slaap?.subjectief||null,slGar:l?.garmin?.gedragen&&l?.garmin?.slaapscore!=null?l.garmin.slaapscore:null};});
+  const hasTrend=trend14.some(x=>x.hs!==null),hasSlaapData=trend14.some(x=>x.slSub||x.slGar);
+  const pain7=Array.from({length:7},(_,i)=>{const d=addDays(today,-(6-i));const k=fmt(d);return{d,pO:entries[k]?.answers?.lichaam?.pijn||null,pA:avond[k]?.pijn||null};});
+  const sf={};Array.from({length:14},(_,i)=>entries[fmt(addDays(today,-i))]).filter(Boolean).forEach(e=>(e.answers?.lichaam?.sporten||[]).forEach(s=>{if(s.sport&&s.sport!=="Geen")sf[s.sport]=(sf[s.sport]||0)+1;}));
+  const topSp=Object.entries(sf).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const fysioNotes=Object.entries(entries).filter(([,e])=>e.answers?.lichaam?.fysio).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,20);
+  const stats=[{lbl:"Streak",val:streak,unit:streak===1?"dag":"dagen",col:"var(--a2)"},{lbl:"Deze week",val:thisWeek,unit:"van 7",col:"var(--gn)"},{lbl:"30 dagen",val:filled,unit:"entries",col:"#4a9e6a"},{lbl:"Lite/Full",val:`${lite}/${full}`,unit:"keer",col:"var(--mu)"}];
+  const syncC=syncState==='ok'?'#4a9e6a':syncState==='error'?'#e06040':'#4a8aaa';
+  return(<div style={{padding:"16px 16px 0"}}>
+
+    {/* GitHub Sync card */}
+    <div className="sync-card">
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div className="lbl-gh">GitHub Gist sync</div>
+          <div style={{fontSize:12,marginTop:4,color:hasGh?(syncState==='error'?'#e06040':'#4a8aaa'):"#3a6a7a"}}>
+            {hasGh?(syncState?syncMsg:"Ingesteld — synct automatisch"):"Niet ingesteld"}
+          </div>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          {hasGh&&<button type="button" onClick={onSync} disabled={syncState==='syncing'} style={{background:"transparent",border:"1px solid #1e4a5a",borderRadius:8,padding:"6px 12px",color:"#4a8aaa",cursor:"pointer",fontSize:12,fontFamily:"'DM Sans',sans-serif",display:"flex",alignItems:"center",gap:5}}>{syncState==='syncing'?<span className="spinning">↑↓</span>:"↑↓"} Sync nu</button>}
+          <button type="button" onClick={onOpenSetup} style={{background:"transparent",border:"1px solid #1e4a5a",borderRadius:8,padding:"6px 12px",color:"#4a8aaa",cursor:"pointer",fontSize:12,fontFamily:"'DM Sans',sans-serif"}}>{hasGh?"Wijzigen":"Instellen"}</button>
+        </div>
+      </div>
+      {!hasGh&&<div style={{fontSize:11,color:"#2a5a6a",marginTop:10,lineHeight:1.6}}>Stel GitHub Gist in voor automatische sync tussen PC en iPhone.</div>}
+    </div>
+
+    {/* Profiel */}
+    <div className="profiel-card"><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:profielOpen?14:0}}><div><div className="lbl-p">Persoonlijk profiel</div>{!profielOpen&&profiel.naam&&<div style={{fontSize:13,color:"var(--tx2)",marginTop:4}}>{profiel.naam}{profiel.werk?` · ${profiel.werk}`:""}</div>}</div><button type="button" onClick={()=>setProfielOpen(o=>!o)} style={{background:"transparent",border:"1px solid #3a2a4a",borderRadius:8,padding:"5px 12px",color:"#9a7ab8",cursor:"pointer",fontSize:12,fontFamily:"'DM Sans',sans-serif"}}>{profielOpen?"Sluiten":"Bewerken"}</button></div>{profielOpen&&(<><div style={{fontSize:12,color:"#7a5a9a",marginBottom:14,lineHeight:1.5}}>Wordt gebruikt door de AI voor verdieping en samenvatting.</div>{[{key:"naam",lbl:"Naam",ph:"Bijv. Maurits",rows:1},{key:"werk",lbl:"Werk & rol",ph:"Bijv. Clinical Marketing Specialist bij Philips IGT, Shanghai",rows:2},{key:"klachten",lbl:"Lichamelijke klachten",ph:"Bijv. Chronische spanning rechterkant (heup, onderrug, trapezius), anterieure bekkenkanteling…",rows:4}].map(({key,lbl,ph,rows})=><div key={key} style={{marginBottom:14}}><div className="lbl-p" style={{marginBottom:6}}>{lbl}</div><textarea className="ta-p" value={draft[key]||""} onChange={e=>setDraft(p=>({...p,[key]:e.target.value}))} placeholder={ph} rows={rows}/></div>)}<button type="button" onClick={()=>{onSaveProfiel(draft);setProfielOpen(false);}} style={{width:"100%",padding:"11px",borderRadius:10,border:"none",background:"#3a2a5a",color:"#c8a8e8",fontFamily:"'DM Sans',sans-serif",fontSize:14,cursor:"pointer"}}>Opslaan ✓</button></>)}{!profielOpen&&!profiel.naam&&<div style={{fontSize:12,color:"#7a5a9a",marginTop:6}}>Voeg naam, werk en klachten toe voor betere AI-antwoorden.</div>}</div>
+
+    {/* Data */}
+    <div className="card" style={{marginBottom:14}}><div className="lbl" style={{marginBottom:10}}>{entryCount} entries · lokale opslag</div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="dbtn" onClick={onExport}><span>⬇</span>Exporteer JSON</button><button type="button" className="dbtn" onClick={onImport}><span>⬆</span>Importeer JSON</button></div></div>
+
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>{stats.map(s=><div key={s.lbl} className="scrd"><div className="serif" style={{fontSize:28,fontWeight:600,color:s.col,lineHeight:1}}>{s.val}</div><div className="lbl" style={{marginTop:6}}>{s.unit}</div><div style={{fontSize:11,color:"var(--mu)",marginTop:5}}>{s.lbl}</div></div>)}</div>
+
+    {hasTrend&&<div className="card" style={{marginBottom:10}}><div className="lbl" style={{marginBottom:4}}>Herstelscore — 14 dagen</div><div style={{fontSize:11,color:"var(--mu)",marginBottom:12}}>0–10 op pijn + oefeningen + sport + slaap + Garmin BB</div><div style={{display:"flex",alignItems:"flex-end",gap:4,height:60,marginBottom:6}}>{trend14.map(({hs},i)=><div key={i} style={{flex:1,height:"100%",display:"flex",flexDirection:"column",justifyContent:"flex-end",alignItems:"center",position:"relative"}}>{hs!==null&&<><div style={{position:"absolute",top:0,fontSize:8,color:scoreColor(hs),fontWeight:600}}>{hs}</div><div style={{width:"70%",borderRadius:"4px 4px 0 0",background:scoreColor(hs),height:`${(hs/10)*54+4}px`,opacity:.85}}/></>}</div>)}</div><div style={{display:"flex",justifyContent:"space-between"}}>{trend14.filter((_,i)=>i%2===0).map(({d},i)=><div key={i} style={{fontSize:9,color:"var(--mu)"}}>{DAYS_S[d.getDay()]}</div>)}</div></div>}
+
+    {hasSlaapData&&<div className="card" style={{marginBottom:10}}><div className="lbl" style={{marginBottom:4}}>Slaap — subjectief vs Garmin</div><div style={{fontSize:11,color:"var(--mu)",marginBottom:12}}>Gekleurd = eigen gevoel · Stip = Garmin</div><div style={{display:"flex",alignItems:"flex-end",gap:4,height:60,position:"relative"}}>{trend14.map(({slSub,slGar},i)=><div key={i} style={{flex:1,height:"100%",display:"flex",flexDirection:"column",justifyContent:"flex-end",alignItems:"center",position:"relative"}}>{slSub&&<div style={{width:"60%",borderRadius:"3px 3px 0 0",background:SLAAP_C[slSub],height:`${(slSub/5)*52+4}px`,opacity:.8}}/>}{slGar!=null&&<div style={{width:5,height:5,borderRadius:"50%",background:"var(--gn)",position:"absolute",bottom:`${(slGar/100)*60-2}px`,zIndex:2}}/>}</div>)}{(()=>{const pts=trend14.map((p,i)=>p.slGar!=null?`${((i+.5)/trend14.length)*100}%,${60-(p.slGar/100)*60}`:null).filter(Boolean);return pts.length>1?<svg style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",overflow:"visible",pointerEvents:"none"}}><polyline points={pts.join(" ")} fill="none" stroke="var(--gn)" strokeWidth="1.5" strokeOpacity=".55"/></svg>:null;})()}</div><div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>{trend14.filter((_,i)=>i%2===0).map(({d},i)=><div key={i} style={{fontSize:9,color:"var(--mu)"}}>{DAYS_S[d.getDay()]}</div>)}</div></div>}
+
+    <div className="card" style={{marginBottom:10}}><div className="lbl" style={{marginBottom:12}}>Pijn — 7 dagen</div><div style={{display:"flex",alignItems:"flex-end",gap:6,height:60}}>{pain7.map(({d,pO,pA},i)=><div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}><div style={{width:"100%",display:"flex",gap:2,alignItems:"flex-end",height:52,justifyContent:"center"}}><div style={{width:"45%",borderRadius:"3px 3px 0 0",background:pO?PIJN_C[pO]:"var(--pb)",height:pO?`${(pO/5)*44+4}px`:"4px",opacity:pO?1:.3}}/><div style={{width:"45%",borderRadius:"3px 3px 0 0",background:pA?"#4a9e6a":"var(--pb)",height:pA?`${(pA/5)*44+4}px`:"4px",opacity:pA?.6:.2}}/></div><div style={{fontSize:9,color:"var(--mu)"}}>{DAYS_S[d.getDay()]}</div></div>)}</div><div style={{display:"flex",gap:14,marginTop:8}}>{[["#d4944a","Ochtend"],["#4a9e6a","Avond"]].map(([c,l])=><div key={l} style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:10,height:10,borderRadius:2,background:c}}/><span style={{fontSize:10,color:"var(--mu)"}}>{l}</span></div>)}</div></div>
+
+    {topSp.length>0&&<div className="card" style={{marginBottom:10}}><div className="lbl" style={{marginBottom:12}}>Meest gedaan — 14 dagen</div>{topSp.map(([sp,ct])=><div key={sp} style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}><div style={{width:80,fontSize:13,color:"var(--tx)"}}>{sp}</div><div style={{flex:1,height:6,background:"var(--pb)",borderRadius:3,overflow:"hidden"}}><div style={{width:`${(ct/14)*100}%`,height:"100%",background:"var(--a)",borderRadius:3}}/></div><div style={{fontSize:12,color:"var(--mu)",width:28,textAlign:"right"}}>{ct}×</div></div>)}</div>}
+
+    {fysioNotes.length>0&&<div className="card" style={{marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:fysioOpen?14:0}}><div><div className="lbl-f">Fysio-notities</div><div style={{fontSize:11,color:"var(--mu)",marginTop:3}}>{fysioNotes.length} notities</div></div><div style={{display:"flex",gap:8}}><button type="button" onClick={()=>{const t=fysioNotes.map(([k,e])=>`${k}\n${e.answers.lichaam.fysio}`).join("\n\n");navigator.clipboard?.writeText(t).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);}).catch(()=>setCopied(false));}} style={{background:"transparent",border:"1px solid var(--fr)",color:copied?"#4a9e6a":"#5a8a5a",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,fontFamily:"'DM Sans',sans-serif"}}>{copied?"✓ Gekopieerd":"📋 Kopieer"}</button><button type="button" onClick={()=>setFysioOpen(o=>!o)} style={{background:"transparent",border:"1px solid var(--br)",color:"var(--mu)",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,fontFamily:"'DM Sans',sans-serif"}}>{fysioOpen?"Verberg":"Toon"}</button></div></div>{fysioOpen&&fysioNotes.map(([k,e])=><div key={k} style={{borderTop:"1px solid var(--br)",paddingTop:12,marginTop:8}}><div style={{fontSize:11,color:"var(--mu)",marginBottom:6}}>{k}</div><div style={{fontSize:13,color:"var(--tx2)",lineHeight:1.6,whiteSpace:"pre-wrap"}}>{e.answers.lichaam.fysio}</div></div>)}</div>}
+
+    <div className="card"><div className="lbl" style={{marginBottom:12}}>Afgelopen 30 dagen</div><div className="hmap">{last30.map(({d,key,entry})=><div key={key} className="hc" style={{background:entry?(entry.mode==="lite"?"var(--hl)":"var(--hf)"):"var(--he)",color:entry?(entry.mode==="lite"?"var(--hlc)":"var(--hfc)"):"var(--hec)",border:key===todayKey?"1px solid var(--a2)":"none"}}>{d.getDate()}</div>)}</div><div style={{display:"flex",gap:14,marginTop:10}}>{[["var(--hl)","Lite"],["var(--hf)","Full"],["var(--he)","Leeg"]].map(([bg,l])=><div key={l} style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:11,height:11,borderRadius:3,background:bg}}/><span style={{fontSize:11,color:"var(--mu)"}}>{l}</span></div>)}</div></div>
+  </div>);
+}
+
+// ── InterviewMode ─────────────────────────────────────────────────────────────
+function InterviewMode({questions,existing,onComplete,onClose}){
+  const textQs=questions.filter(q=>q.type==="text");
+  const[idx,setIdx]=useState(0);const[phase,setPhase]=useState("intro");
+  const[transcript,setTr]=useState("");const[interim,setIn]=useState("");
+  const iARef=useRef({...existing});const recRef=useRef(null),phRef=useRef("intro");
+  phRef.current=phase;
+  async function getVoice(){let v=window.speechSynthesis?.getVoices()||[];if(!v.length){await new Promise(r=>{window.speechSynthesis.onvoiceschanged=r;setTimeout(r,800);});v=window.speechSynthesis?.getVoices()||[];}return v.find(x=>x.lang==="nl-NL")||v.find(x=>x.lang.startsWith("nl-NL"))||v.find(x=>x.lang.startsWith("nl-")&&!x.lang.startsWith("nl-BE"))||v.find(x=>x.lang.startsWith("nl"))||v[0]||null;}
+  const speak=useCallback(async(text,onEnd)=>{if(!window.speechSynthesis)return onEnd?.();window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="nl-NL";u.rate=0.93;const v=await getVoice();if(v)u.voice=v;u.onend=()=>onEnd?.();u.onerror=()=>onEnd?.();window.speechSynthesis.speak(u);},[]);
+  const stopRec=useCallback(()=>{if(recRef.current){try{recRef.current.abort();}catch{}recRef.current=null;}setIn("");},[]);
+  const startRec=useCallback(()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){setPhase("paused");return;}stopRec();const rec=new SR();rec.lang="nl-NL";rec.continuous=true;rec.interimResults=true;rec.onresult=e=>{let f="",n="";for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)f+=e.results[i][0].transcript+" ";else n+=e.results[i][0].transcript;}if(f)setTr(p=>p+f);setIn(n);};rec.onend=()=>{if(phRef.current==="listening"){try{rec.start();}catch{}}};rec.onerror=e=>{if(e.error!=="no-speech")setPhase("paused");};recRef.current=rec;try{rec.start();setPhase("listening");}catch{setPhase("paused");};},[stopRec]);
+  function speakQ(i){const q=textQs[i];if(!q)return;setTr("");setIn("");setPhase("speaking");speak(q.q,()=>startRec());}
+  useEffect(()=>{setPhase("speaking");speak("Start de dagstart. Ik lees elke vraag voor. Spreek je antwoord in en tik daarna op Volgende.",()=>speakQ(0));return()=>{window.speechSynthesis?.cancel();stopRec();};},[]);
+  function saveAnswer(tr){const q=textQs[idx];if(q&&tr.trim())iARef.current={...iARef.current,[q.id]:tr.trim()};}
+  function advance(){stopRec();saveAnswer(transcript);setTr("");if(idx===textQs.length-1){window.speechSynthesis?.cancel();setPhase("done");speak("Klaar. Vul daarna de lichaamscheck in.");}else{const n=idx+1;setIdx(n);speakQ(n);}}
+  function finish(){stopRec();saveAnswer(transcript);onComplete({...iARef.current});}
+  const progress=((idx+(phase==="done"?1:0))/textQs.length)*100,curQ=textQs[idx];
+  const IR="1px solid var(--ir)";
+  if(phase==="done")return(<div className="ivs"><div style={{padding:"18px 22px 14px",borderBottom:IR,display:"flex",justifyContent:"space-between",alignItems:"center"}}><div className="lbl" style={{color:"#4a9e6a"}}>Interview voltooid ✓</div><button type="button" onClick={finish} style={{background:"transparent",border:"none",color:"var(--mu)",cursor:"pointer",fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>Sluiten</button></div><div style={{flex:1,padding:"28px 26px",overflowY:"auto"}}><div style={{fontSize:36,textAlign:"center",marginBottom:16}}>✓</div><div className="serif" style={{fontSize:20,color:"var(--tx)",textAlign:"center",marginBottom:10}}>Dagstart compleet</div><div style={{fontSize:13,color:"var(--su)",textAlign:"center",lineHeight:1.7,marginBottom:24}}>Vul daarna de lichaamscheck in.</div>{textQs.map(q=><div key={q.id} className="card" style={{marginBottom:8}}><div style={{fontSize:12,color:"var(--mu)",marginBottom:6}}>{q.q}</div><div style={{fontSize:14,color:"var(--tx2)",lineHeight:1.6,whiteSpace:"pre-wrap"}}>{iARef.current[q.id]||<em style={{color:"var(--di)"}}>Niet ingevuld</em>}</div></div>)}</div><div style={{padding:"18px 22px 30px",borderTop:IR}}><button type="button" className="ivnx" onClick={finish}>Ga naar lichaamscheck →</button></div></div>);
+  return(<div className="ivs"><div style={{padding:"18px 22px 14px",borderBottom:IR,display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div className="lbl" style={{marginBottom:6}}>Interview · {idx+1}/{textQs.length}</div><div style={{width:130,height:3,background:"var(--ir)",borderRadius:2,overflow:"hidden"}}><div style={{width:`${progress}%`,height:"100%",background:"var(--a)",borderRadius:2,transition:"width .4s"}}/></div></div><button type="button" onClick={()=>{window.speechSynthesis?.cancel();stopRec();onClose();}} style={{background:"transparent",border:IR,borderRadius:8,padding:"6px 12px",color:"var(--mu)",cursor:"pointer",fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>Stop</button></div><div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"28px 26px",overflowY:"auto"}}><div className="ivst" style={{marginBottom:22,color:phase==="listening"?"#e06040":"var(--mu)"}}>{phase==="listening"?<><div className="recdot"/><span>Luistert…</span></>:phase==="speaking"?<><div style={{display:"flex",alignItems:"flex-end",height:18}}><span className="wb"/><span className="wb"/><span className="wb"/><span className="wb"/><span className="wb"/></div><span style={{color:"var(--a)"}}>Spreekt…</span></>:<><span style={{width:8,height:8,borderRadius:"50%",background:"var(--mu)",display:"inline-block"}}/><span>Gepauzeerd</span></>}</div><div style={{fontSize:24,lineHeight:1.35,color:"var(--tx)",marginBottom:8,fontFamily:"'Playfair Display',serif"}}>{curQ?.q}</div><div style={{fontSize:13,color:"var(--su)",marginBottom:28}}>{curQ?.hint}</div><div className="ivbox">{transcript||<span style={{color:"var(--di)"}}>Jouw antwoord verschijnt hier…</span>}{interim&&<span style={{color:"var(--mu)"}}> {interim}</span>}</div></div><div style={{padding:"18px 22px 30px",borderTop:IR,display:"flex",flexDirection:"column",gap:10}}><button type="button" className="ivnx" onClick={advance} disabled={phase==="speaking"}>{idx===textQs.length-1?"Afronden ✓":"Volgende →"}</button><div style={{display:"flex",gap:10}}><button type="button" className="ivsb" onClick={()=>speakQ(idx)} disabled={phase==="speaking"}>🔁 Herhaal</button><button type="button" className="ivsb" onClick={()=>phase==="listening"?(stopRec(),setPhase("paused")):startRec()}>{phase==="listening"?"⏸ Pauzeer":"🎙 Hervat"}</button></div></div></div>);
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App/></ErrorBoundary>);
+</script>
+</body>
+</html>
