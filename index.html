@@ -140,6 +140,12 @@ body{background:#16130e;min-height:100vh;}
 @keyframes wv{0%,100%{height:4px}50%{height:18px}}
 input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.4;cursor:pointer;}
 .ds.light input[type="time"]::-webkit-calendar-picker-indicator{filter:none;opacity:.6;}
+input[type="range"]{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:#1e3a54;outline:none;cursor:pointer;width:100%;}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:#3a6a8a;border:2px solid #7ac4e8;cursor:pointer;}
+input[type="range"]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#3a6a8a;border:2px solid #7ac4e8;cursor:pointer;border:none;}
+.ds.light input[type="range"]{background:#b0cce0;}
+.ds.light input[type="range"]::-webkit-slider-thumb{background:#2a6a9a;border-color:#1a5a8a;}
+.ds.light input[type="range"]::-moz-range-thumb{background:#2a6a9a;border-color:#1a5a8a;}
 .wb{width:3px;border-radius:2px;background:var(--a);display:inline-block;margin:0 2px;}
 .wb:nth-child(1){animation:wv .8s infinite}.wb:nth-child(2){animation:wv .8s .1s infinite}
 .wb:nth-child(3){animation:wv .8s .2s infinite}.wb:nth-child(4){animation:wv .8s .3s infinite}.wb:nth-child(5){animation:wv .8s .4s infinite}
@@ -408,7 +414,44 @@ class ErrorBoundary extends React.Component{
 }
 
 // ── App ───────────────────────────────────────────────────────────────────────
+// ── PIN lock ──────────────────────────────────────────────────────────────────
+// To change PIN: open browser console and run:
+// crypto.subtle.digest("SHA-256",new TextEncoder().encode("YOURPIN")).then(b=>console.log(Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("")))
+// Then replace the hash below.
+const PIN_HASH="03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // 1234
+async function sha256(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}
+
+function PinScreen({onUnlock}){
+  const[digits,setDigits]=useState([]);const[error,setError]=useState(false);
+  async function tap(k){
+    if(k==="⌫"){setDigits(d=>d.slice(0,-1));setError(false);return;}
+    if(digits.length>=4)return;
+    const next=[...digits,k];setDigits(next);
+    if(next.length===4){
+      const h=await sha256(next.join(""));
+      if(h===PIN_HASH){sessionStorage.setItem("ds_pin","1");onUnlock();}
+      else{setError(true);setTimeout(()=>{setDigits([]);setError(false);},700);}
+    }
+  }
+  const KEYS=[1,2,3,4,5,6,7,8,9,null,0,"⌫"];
+  return(
+    <div style={{position:"fixed",inset:0,background:"#16130e",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:300,fontFamily:"'DM Sans',sans-serif"}}>
+      <div style={{fontFamily:"'Playfair Display',serif",fontSize:30,color:"#f0e8d8",marginBottom:6}}>Dagstart</div>
+      <div style={{fontSize:13,color:"#5a4a38",marginBottom:44}}>Voer je pincode in</div>
+      <div style={{display:"flex",gap:18,marginBottom:52}}>
+        {[0,1,2,3].map(i=><div key={i} style={{width:14,height:14,borderRadius:"50%",background:error?"#c04040":digits.length>i?"#c27820":"transparent",border:`2px solid ${error?"#c04040":digits.length>i?"#c27820":"#3a3020"}`,transition:"all .15s"}}/>)}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,76px)",gap:14}}>
+        {KEYS.map((k,i)=>k===null?<div key={i}/>:(
+          <button key={i} type="button" onClick={()=>tap(k)} style={{width:76,height:76,borderRadius:"50%",background:k==="⌫"?"transparent":"#1f1b14",border:k==="⌫"?"none":"1px solid #2a2318",color:"#f0e8d8",fontSize:k==="⌫"?22:26,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{k}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function App(){
+  const[unlocked,setUnlocked]=useState(!!sessionStorage.getItem("ds_pin"));
   const[tab,setTab]=useState("vandaag");
   const[entries,setEntries]=useState({});const[avondData,setAvondData]=useState({});
   const[loading,setLoading]=useState(true);const[showSetup,setShowSetup]=useState(false);
@@ -501,6 +544,7 @@ function App(){
   const TABS=[{id:"vandaag",icon:"○",lbl:"Vandaag"},{id:"gisteren",icon:"↺",lbl:"Gisteren"},{id:"week",icon:"▦",lbl:"Week"},{id:"stats",icon:"◈",lbl:"Stats"}];
   const syncColor=syncState==='ok'?'#4a9e6a':syncState==='error'?'#e06040':'#4a8aaa';
 
+  if(!unlocked)return <PinScreen onUnlock={()=>setUnlocked(true)}/>;
   if(showSetup)return <SetupScreen onDone={()=>setShowSetup(false)}/>;
   if(loading)return <div className="ds" style={{alignItems:"center",justifyContent:"center",display:"flex",minHeight:"100vh"}}><span style={{color:"#6a5e4e",fontSize:12,letterSpacing:2,textTransform:"uppercase"}}>Laden…</span></div>;
   if(interview)return <div className={`ds${light?" light":""}`}><InterviewMode questions={getQs()} existing={answers} onComplete={onIVComplete} onClose={()=>setInterview(false)}/></div>;
@@ -551,7 +595,7 @@ function VandaagTab({mode,setMode,reisdag,setReisdag,questions,answers,setAnswer
       <div className="prog"><div className="pf" style={{width:`${(step/questions.length)*100}%`}}/></div>
       {step>0&&<button type="button" className="btn-bk" onClick={()=>setStep(s=>s-1)}>← Terug</button>}
       <div className="sn">{step+1} van {questions.length}</div>
-      {q.type==="text"?<TextStep q={q} value={answers[q.id]||""} onChange={v=>setAnswers(p=>({...p,[q.id]:v}))} speech={speech}/>:<LichaamStep value={answers.lichaam||{}} onChange={v=>setAnswers(p=>({...p,lichaam:v}))} light={light} reisdag={reisdag}/>}
+      {q.type==="text"?<TextStep q={q} value={answers[q.id]||""} onChange={v=>setAnswers(p=>({...p,[q.id]:v}))} speech={speech} onNext={canAdv()?()=>isLast?onSave():setStep(s=>s+1):null}/>:<LichaamStep value={answers.lichaam||{}} onChange={v=>setAnswers(p=>({...p,lichaam:v}))} light={light} reisdag={reisdag}/>}
       <button type="button" className="btn" disabled={saving||!canAdv()} onClick={()=>isLast?onSave():setStep(s=>s+1)}>{saving?"Opslaan…":isLast?"Afronden ✓":"Volgende →"}</button>
       {q.type==="text"&&!isLast&&<div style={{textAlign:"center",marginTop:10}}><button type="button" onClick={()=>setStep(s=>s+1)} style={{background:"none",border:"none",color:"var(--su)",fontSize:13,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Sla over</button></div>}
       <div style={{height:24}}/>
@@ -559,20 +603,39 @@ function VandaagTab({mode,setMode,reisdag,setReisdag,questions,answers,setAnswer
   );
 }
 
-function TextStep({q,value,onChange,speech}){
+function TextStep({q,value,onChange,speech,onNext}){
   const ref=useRef(null);useEffect(()=>{ref.current?.focus();},[q.id]);
   const isActive=speech.activeId===q.id;
   return(<>
     <div className="sq serif">{q.q}</div><div className="sh">{q.hint}</div>
     <div className="card" style={{marginBottom:0}}>
       <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-        <textarea ref={ref} className="ta" value={value} onChange={e=>onChange(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")e.stopPropagation();}} placeholder="Schrijf hier…" style={{flex:1}} rows={4}/>
+        <textarea ref={ref} className="ta" value={value} onChange={e=>onChange(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();onNext&&onNext();}}} placeholder="Schrijf hier…" style={{flex:1}} rows={4}/>
         {speech.supported&&<button type="button" onClick={()=>isActive?speech.stop():speech.start(q.id,t=>onChange((value?value+" ":"")+t))} style={{background:isActive?"#c27820":"transparent",border:`1px solid ${isActive?"#c27820":"var(--cb)"}`,borderRadius:8,padding:"8px 10px",cursor:"pointer",fontSize:14,flexShrink:0,color:isActive?"#fff":"var(--mu)"}}>{isActive?"⏹":"🎙"}</button>}
       </div>
       {isActive&&<div style={{fontSize:11,color:"var(--a2)",marginTop:8,letterSpacing:1,textTransform:"uppercase"}}>● Luistert…</div>}
     </div>
     {speech.micError&&<div style={{background:"#2a1010",border:"1px solid #5a2020",borderRadius:10,padding:"10px 12px",fontSize:12,color:"#e08080",marginTop:8,lineHeight:1.5}}>⚠ {speech.micError}</div>}
   </>);
+}
+
+function TimeSlider({label,value,onChange,minHour,maxHour}){
+  const STEP=15,total=Math.round((maxHour-minHour)*60/STEP);
+  function toStep(v){if(!v)return null;const[h,m]=v.split(":").map(Number);let hrs=h;if(minHour>=19&&h<12)hrs=h+24;return Math.min(total,Math.max(0,Math.round((hrs*60+m-minHour*60)/STEP)));}
+  function toTime(s){const mins=minHour*60+s*STEP;const h=Math.floor(mins/60)%24;const m=mins%60;return`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;}
+  const s=toStep(value);
+  return(
+    <div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:8}}>
+        <div className="lbl" style={{color:"#4a8aa8"}}>{label}</div>
+        <div style={{fontSize:22,fontWeight:500,color:"#7ac4e8",fontFamily:"'DM Sans',sans-serif",minWidth:48,textAlign:"right"}}>{value||"—"}</div>
+      </div>
+      <input type="range" min={0} max={total} value={s??Math.round(total/2)} step={1} onChange={e=>onChange(toTime(Number(e.target.value)))} style={{accentColor:"#3a6a8a"}}/>
+      <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#2a5a6a",marginTop:3}}>
+        <span>{toTime(0)}</span><span>{toTime(total)}</span>
+      </div>
+    </div>
+  );
 }
 
 function LichaamStep({value,onChange,light,reisdag}){
@@ -613,7 +676,10 @@ function LichaamStep({value,onChange,light,reisdag}){
     <div className="slaap-box">
       <div className="lbl-s" style={{marginBottom:12}}>Slaap afgelopen nacht</div>
       <div style={{marginBottom:14}}><div className="lbl" style={{marginBottom:8,color:"#4a8aa8"}}>Hoe voelde je slaap?</div><div style={{display:"flex",gap:6}}>{[1,2,3,4,5].map(n=><button type="button" key={n} className={`slaap-btn${slaap.subjectief===n?" on":""}`} onClick={()=>setSlaap("subjectief",n)} style={{background:slaap.subjectief===n?SLAAP_C[n]:"transparent",borderColor:slaap.subjectief===n?SLAAP_C[n]:"#1e3040"}}><div style={{fontSize:15,marginBottom:2}}>{["😴","😕","😐","🙂","😊"][n-1]}</div><div style={{fontSize:9,color:slaap.subjectief===n?"#fff":"#4a8aa8"}}>{SLAAP_L[n]}</div></button>)}</div></div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>{[["Bedtijd","bedtijd"],["Wakker om","wakkertijd"]].map(([lbl,key])=><div key={key}><div className="lbl" style={{marginBottom:6,color:"#4a8aa8"}}>{lbl}</div><input type="time" value={slaap[key]||""} onChange={e=>setSlaap(key,e.target.value)} style={{width:"100%",background:"transparent",border:"none",borderBottom:"1px solid #1e3040",color:"#7ac4e8",fontFamily:"'DM Sans',sans-serif",fontSize:15,outline:"none",padding:"6px 0",colorScheme:"dark"}}/></div>)}</div>
+      <div style={{display:"flex",flexDirection:"column",gap:16,marginBottom:14}}>
+        <TimeSlider label="Bedtijd" value={slaap.bedtijd||""} onChange={v=>setSlaap("bedtijd",v)} minHour={19} maxHour={27}/>
+        <TimeSlider label="Wakker om" value={slaap.wakkertijd||""} onChange={v=>setSlaap("wakkertijd",v)} minHour={4} maxHour={12}/>
+      </div>
       <div className="lbl" style={{marginBottom:6,color:"#4a8aa8"}}>Optionele notitie</div>
       <textarea className="ta" value={slaap.notitie||""} onChange={e=>setSlaap("notitie",e.target.value)} placeholder="Wakker geworden? Onrustig?" style={{minHeight:40,borderTop:"1px solid #1e3040",paddingTop:8,color:"#a0c8d8"}}/>
     </div>
