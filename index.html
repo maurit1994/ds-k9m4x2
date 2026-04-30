@@ -444,9 +444,9 @@ function Celebration({streak,onDone}){
 // To change PIN: open browser console and run:
 // crypto.subtle.digest("SHA-256",new TextEncoder().encode("YOURPIN")).then(b=>console.log(Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("")))
 // Then replace the hash below.
-const PIN_HASH="b7676671a188c8fe6c3ae13a9c31ad882c4118f1d4c16a8e46d9c971b426f94d"; // 1234
+const PIN_HASH="03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // 1234
 async function sha256(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}
-
+ 
 function PinScreen({onUnlock}){
   const[digits,setDigits]=useState([]);const[error,setError]=useState(false);
   async function tap(k){
