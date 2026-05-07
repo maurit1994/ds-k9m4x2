@@ -320,10 +320,12 @@ const EERSTE_ICONS=["📱","☀️","🚶","✦"];
 function useSpeech(){
   const recRef=useRef(null);const[activeId,setActiveId]=useState(null);const[micError,setMicError]=useState(null);
   const supported=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
-  const start=useCallback((id,onResult)=>{
+  const start=useCallback(async(id,onResult)=>{
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!SR){setMicError("Gebruik Chrome of Safari voor spraak.");return;}
     if(recRef.current){try{recRef.current.stop();}catch{}}
+    // Pre-request mic permission via getUserMedia so iOS doesn't re-prompt on every SpeechRecognition call
+    try{const s=await navigator.mediaDevices?.getUserMedia({audio:true});s?.getTracks().forEach(t=>t.stop());}catch{}
     const rec=new SR();rec.lang="nl-NL";rec.continuous=false;rec.interimResults=false;
     rec.onresult=e=>{onResult(Array.from(e.results).map(r=>r[0].transcript).join(" "));setMicError(null);try{rec.stop();}catch{}};
     rec.onerror=e=>{setActiveId(null);if(e.error==="not-allowed")setMicError("Microfoon geblokkeerd — geef toestemming in je browser.");else if(e.error!=="no-speech")setMicError(`Fout: ${e.error}`);};
@@ -440,40 +442,8 @@ function Celebration({streak,onDone}){
   );
 }
 
-// ── PIN lock ──────────────────────────────────────────────────────────────────
-// To change PIN: update the PIN value below.
-const PIN="1234";
-
-function PinScreen({onUnlock}){
-  const[digits,setDigits]=useState([]);const[error,setError]=useState(false);
-  function tap(k){
-    if(k==="⌫"){setDigits(d=>d.slice(0,-1));setError(false);return;}
-    if(digits.length>=4)return;
-    const next=[...digits,k];setDigits(next);
-    if(next.length===4){
-      if(next.join("")===PIN){sessionStorage.setItem("ds_pin","1");onUnlock();}
-      else{setError(true);setTimeout(()=>{setDigits([]);setError(false);},700);}
-    }
-  }
-  const KEYS=[1,2,3,4,5,6,7,8,9,null,0,"⌫"];
-  return(
-    <div style={{position:"fixed",inset:0,background:"#16130e",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:300,fontFamily:"'DM Sans',sans-serif"}}>
-      <div style={{fontFamily:"'Playfair Display',serif",fontSize:30,color:"#f0e8d8",marginBottom:6}}>Dagstart</div>
-      <div style={{fontSize:13,color:"#5a4a38",marginBottom:44}}>Voer je pincode in</div>
-      <div style={{display:"flex",gap:18,marginBottom:52}}>
-        {[0,1,2,3].map(i=><div key={i} style={{width:14,height:14,borderRadius:"50%",background:error?"#c04040":digits.length>i?"#c27820":"transparent",border:`2px solid ${error?"#c04040":digits.length>i?"#c27820":"#3a3020"}`,transition:"all .15s"}}/>)}
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,76px)",gap:14}}>
-        {KEYS.map((k,i)=>k===null?<div key={i}/>:(
-          <button key={i} type="button" onClick={()=>tap(k)} style={{width:76,height:76,borderRadius:"50%",background:k==="⌫"?"transparent":"#1f1b14",border:k==="⌫"?"none":"1px solid #2a2318",color:"#f0e8d8",fontSize:k==="⌫"?22:26,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{k}</button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function App(){
-  const[unlocked,setUnlocked]=useState(!!sessionStorage.getItem("ds_pin"));
   const[showCelebration,setShowCelebration]=useState(false);
   const[tab,setTab]=useState("vandaag");
   const[entries,setEntries]=useState({});const[avondData,setAvondData]=useState({});
@@ -572,7 +542,6 @@ function App(){
   const TABS=[{id:"vandaag",icon:"○",lbl:"Vandaag"},{id:"gisteren",icon:"↺",lbl:"Gisteren"},{id:"week",icon:"▦",lbl:"Week"},{id:"stats",icon:"◈",lbl:"Stats"}];
   const syncColor=syncState==='ok'?'#4a9e6a':syncState==='error'?'#e06040':'#4a8aaa';
 
-  if(!unlocked)return <PinScreen onUnlock={()=>setUnlocked(true)}/>;
   if(showSetup)return <SetupScreen onDone={()=>setShowSetup(false)}/>;
   if(loading)return <div className="ds" style={{alignItems:"center",justifyContent:"center",display:"flex",minHeight:"100vh"}}><span style={{color:"#6a5e4e",fontSize:12,letterSpacing:2,textTransform:"uppercase"}}>Laden…</span></div>;
   if(interview)return <div className={`ds${light?" light":""}`}><InterviewMode questions={getQs()} existing={answers} onComplete={onIVComplete} onClose={()=>setInterview(false)}/></div>;
@@ -596,7 +565,7 @@ function App(){
         </div>
       </div>
       <div className="con">
-        {tab==="vandaag"&&<VandaagTab mode={mode} setMode={m=>{setMode(m);setStep(0);if(saved)setEditing(true);}} reisdag={reisdag} setReisdag={r=>{setReisdag(r);if(saved)setEditing(true);}} questions={getQs()} answers={answers} setAnswers={setAnswers} saved={saved} editing={editing} onStartEdit={()=>{setEditing(true);setStep(0);}} saving={saving} onSave={handleSave} step={step} setStep={setStep} speech={speech} hasTTS={hasTTS} light={light} onStartIV={()=>setInterview(true)} avond={avondData[todayKey]} onSaveAvond={d=>saveAvond(todayKey,d)} isEvening={isEvening} profiel={profiel} hasKey={!!getApiKey()} morningPriority={answers.bereiken||""}/>}
+        {tab==="vandaag"&&<VandaagTab mode={mode} setMode={m=>{setMode(m);setStep(0);if(saved)setEditing(true);}} reisdag={reisdag} setReisdag={r=>{setReisdag(r);if(saved)setEditing(true);}} questions={getQs()} answers={answers} setAnswers={setAnswers} saved={saved} editing={editing} onStartEdit={()=>{setEditing(true);setStep(0);}} saving={saving} onSave={handleSave} step={step} setStep={setStep} speech={speech} hasTTS={hasTTS} light={light} onStartIV={()=>setInterview(true)} avond={avondData[todayKey]} onSaveAvond={d=>saveAvond(todayKey,d)} isEvening={isEvening} profiel={profiel} hasKey={!!getApiKey()} morningPriority={answers.bereiken||""} yEntry={entries[yKey]} onSaveYEntry={entry=>saveEntry(yKey,entry)}/>}
         {tab==="gisteren"&&<div style={{padding:"16px 16px 0"}}>{entries[yKey]?<EntryView entry={entries[yKey]} label="Gisteren" avond={avondData[yKey]}/>:<div className="empty">Geen dagstart voor gisteren gevonden.</div>}</div>}
         {tab==="week"&&<WeekTab entries={entries} avond={avondData} today={today} todayKey={todayKey} profiel={profiel} hasKey={!!getApiKey()} onSaveEntry={saveEntry} onSaveAvond={saveAvond}/>}
         {tab==="stats"&&<StatsTab entries={entries} avond={avondData} streak={streak} today={today} todayKey={todayKey} entryCount={Object.keys(entries).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).length} onExport={exportData} onImport={()=>importRef.current?.click()} profiel={profiel} onSaveProfiel={saveProfiel} hasKey={!!getApiKey()} hasGh={!!getGhToken()} syncState={syncState} syncMsg={syncMsg} onSync={manualSync} onOpenSetup={()=>setShowSetup(true)}/>}
@@ -609,8 +578,47 @@ function App(){
   );
 }
 
+// ── GisterenAanvullen ─────────────────────────────────────────────────────────
+function GisterenAanvullen({yEntry,onSave,reisdag}){
+  const[open,setOpen]=useState(false);
+  const[sp,setSp]=useState({sport:"",duur:"",intensiteit:""});
+  const sporten=(yEntry?.answers?.lichaam?.sporten||[]).filter(s=>s.sport&&s.sport!=="Geen");
+  const opts=reisdag?SPORT_REIS:SPORT_STD;
+  function save(){
+    if(!sp.sport)return;
+    const lich=yEntry?.answers?.lichaam||{};
+    onSave({...yEntry,answers:{...yEntry.answers,lichaam:{...lich,sporten:[...(lich.sporten||[]).filter(s=>s.sport!=="Geen"),{...sp,dag:"gisteren"}]}},timestamp:Date.now()});
+    setSp({sport:"",duur:"",intensiteit:""});setOpen(false);
+  }
+  return(
+    <div style={{background:"var(--sc)",border:"1px solid var(--sb)",borderRadius:12,padding:12,marginBottom:14}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+        <div style={{flex:1,minWidth:0}}>
+          <div className="lbl" style={{marginBottom:sporten.length?4:2}}>Sport toevoegen aan gisteren</div>
+          {sporten.length>0?<div style={{display:"flex",flexWrap:"wrap",gap:4}}>{sporten.map((s,i)=><span key={i} style={{fontSize:12,color:"var(--tx2)",background:"var(--pb)",padding:"2px 8px",borderRadius:8}}>{s.sport}{s.duur?` · ${s.duur}`:""}{s.intensiteit?` · ${s.intensiteit}`:""}</span>)}</div>:<div style={{fontSize:12,color:"var(--su)"}}>Nog niets geregistreerd.</div>}
+        </div>
+        {!open&&<button type="button" onClick={()=>setOpen(true)} style={{background:"transparent",border:"1px solid var(--cb)",borderRadius:8,padding:"5px 12px",color:"var(--mu)",fontSize:12,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>+ Toevoegen</button>}
+      </div>
+      {open&&<div style={{marginTop:12}}>
+        <div className="lbl" style={{marginBottom:8}}>Welke sport?</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:sp.sport?10:0}}>{opts.filter(o=>o!=="Geen").map(o=><button type="button" key={o} className={`chip sm${sp.sport===o?" on":""}`} onClick={()=>setSp(p=>({...p,sport:o}))}>{o}</button>)}</div>
+        {sp.sport&&<>
+          <div className="lbl" style={{marginBottom:8,marginTop:10}}>Duur</div>
+          <div style={{display:"flex",gap:6,marginBottom:10}}>{DUUR.map(d=><button type="button" key={d} className={`chip sm${sp.duur===d?" on":""}`} onClick={()=>setSp(p=>({...p,duur:d}))}>{d}</button>)}</div>
+          <div className="lbl" style={{marginBottom:8}}>Intensiteit</div>
+          <div style={{display:"flex",gap:6,marginBottom:12}}>{INT.map(n=><button type="button" key={n} className={`chip sm ci-${n[0]}${sp.intensiteit===n?" on":""}`} onClick={()=>setSp(p=>({...p,intensiteit:n}))}>{n}</button>)}</div>
+        </>}
+        <div style={{display:"flex",gap:8,marginTop:sp.sport?0:12}}>
+          <button type="button" onClick={()=>{setOpen(false);setSp({sport:"",duur:"",intensiteit:""}); }} style={{flex:1,padding:"9px",borderRadius:8,border:"1px solid var(--br)",background:"transparent",color:"var(--mu)",fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:"pointer"}}>Annuleer</button>
+          <button type="button" onClick={save} disabled={!sp.sport} style={{flex:1,padding:"9px",borderRadius:8,border:"none",background:sp.sport?"var(--a)":"var(--pb)",color:sp.sport?"#fff":"var(--mu)",fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:sp.sport?"pointer":"default"}}>Opslaan ✓</button>
+        </div>
+      </div>}
+    </div>
+  );
+}
+
 // ── VandaagTab ────────────────────────────────────────────────────────────────
-function VandaagTab({mode,setMode,reisdag,setReisdag,questions,answers,setAnswers,saved,editing,onStartEdit,saving,onSave,step,setStep,speech,hasTTS,light,onStartIV,avond,onSaveAvond,isEvening,profiel,hasKey,morningPriority}){
+function VandaagTab({mode,setMode,reisdag,setReisdag,questions,answers,setAnswers,saved,editing,onStartEdit,saving,onSave,step,setStep,speech,hasTTS,light,onStartIV,avond,onSaveAvond,isEvening,profiel,hasKey,morningPriority,yEntry,onSaveYEntry}){
   const showForm=!saved||editing;const q=questions[step];const isLast=step===questions.length-1;
   function canAdv(){if(!q)return false;if(q.type==="lichaam"){const l=answers.lichaam||{},sp=l.sporten||[];const spOk=sp.length===0||sp.every(s=>s.sport==="Geen"||(s.sport&&s.duur&&s.intensiteit));const gOk=l.garmin?.gedragen===false||l.garmin?.gedragen==null||(l.garmin?.gedragen===true&&l.garmin?.bodyBattery!=null&&l.garmin?.slaapscore!=null&&l.garmin?.hrvStatus);return spOk&&!!l.pijn&&!!l.oefeningen&&gOk&&!!l.slaap?.subjectief;}return(answers[q.id]||"").trim().length>0;}
   if(!showForm)return(<div style={{padding:"16px 16px 0"}}><CompletedView questions={questions} answers={answers} onEdit={onStartEdit} light={light} reisdag={reisdag}/><AvondCheckIn avond={avond} onSave={onSaveAvond} isEvening={isEvening} morningPriority={morningPriority}/>{hasKey&&<ChatPanel questions={questions} answers={answers} profiel={profiel}/>}</div>);
@@ -621,14 +629,13 @@ function VandaagTab({mode,setMode,reisdag,setReisdag,questions,answers,setAnswer
         <div className="mt">{["lite","full"].map(m=><button type="button" key={m} className="mb" onClick={()=>setMode(m)} style={{background:mode===m?(m==="lite"?light?"#deeef8":"#1e3a54":light?"#fdf0e0":"#3d2a0a"):"var(--card)",color:mode===m?(m==="lite"?light?"#1a5a8a":"#6bb3e8":light?"#c27820":"#d4944a"):"var(--mu)",borderColor:mode===m?(m==="lite"?light?"#a8d0e8":"#2a5a84":light?"#e8c080":"#6a4018"):"var(--br)"}}>{m==="lite"?"Lite":"Full"}</button>)}</div>
         <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
           <button type="button" className={`chip reis${reisdag?" on":""}`} onClick={()=>setReisdag(!reisdag)}>🗺 Reisdag</button>
-          <button type="button" className={`chip${answers.gelezen?" on":""}`} onClick={()=>setAnswers(p=>({...p,gelezen:!p.gelezen}))}>📖 Gelezen</button>
           {reisdag&&<span style={{fontSize:12,color:"#5a9a6a",alignSelf:"center"}}>Sport en vragen aangepast</span>}
         </div>
       </>)}
       <div className="prog"><div className="pf" style={{width:`${(step/questions.length)*100}%`}}/></div>
       {step>0&&<button type="button" className="btn-bk" onClick={()=>setStep(s=>s-1)}>← Terug</button>}
       <div className="sn">{step+1} van {questions.length}</div>
-      {q.type==="text"?<TextStep q={q} value={answers[q.id]||""} onChange={v=>setAnswers(p=>({...p,[q.id]:v}))} speech={speech} onNext={canAdv()?()=>isLast?onSave():setStep(s=>s+1):null}/>:<LichaamStep value={answers.lichaam||{}} onChange={v=>setAnswers(p=>({...p,lichaam:v}))} light={light} reisdag={reisdag}/>}
+      {q.type==="text"?<TextStep q={q} value={answers[q.id]||""} onChange={v=>setAnswers(p=>({...p,[q.id]:v}))} speech={speech} onNext={canAdv()?()=>isLast?onSave():setStep(s=>s+1):null}/>:<>{yEntry&&onSaveYEntry&&<GisterenAanvullen yEntry={yEntry} onSave={onSaveYEntry} reisdag={reisdag}/>}<LichaamStep value={answers.lichaam||{}} onChange={v=>setAnswers(p=>({...p,lichaam:v}))} light={light} reisdag={reisdag}/></>}
       <button type="button" className="btn" disabled={saving||!canAdv()} onClick={()=>isLast?onSave():setStep(s=>s+1)}>{saving?"Opslaan…":isLast?"Afronden ✓":"Volgende →"}</button>
       {q.type==="text"&&!isLast&&<div style={{textAlign:"center",marginTop:10}}><button type="button" onClick={()=>setStep(s=>s+1)} style={{background:"none",border:"none",color:"var(--su)",fontSize:13,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Sla over</button></div>}
       <div style={{height:24}}/>
@@ -675,22 +682,27 @@ function LichaamStep({value,onChange,light,reisdag}){
   const sporten=value.sporten||[],garmin=value.garmin||{gedragen:null},slaap=value.slaap||{};
   const sportOpts=reisdag?SPORT_REIS:SPORT_STD;
   function upSp(i,k,v){if(k==="sport"&&v==="Geen"){onChange({...value,sporten:[{sport:"Geen",duur:"",intensiteit:""}]});return;}const u=[...sporten];u[i]={...u[i],[k]:v};onChange({...value,sporten:u});}
-  function addSp(){onChange({...value,sporten:[...sporten.filter(s=>s.sport!=="Geen"),{sport:"",duur:"",intensiteit:""}]});}
+  function addSp(){onChange({...value,sporten:[...sporten.filter(s=>s.sport!=="Geen"),{sport:"",duur:"",intensiteit:"",dag:"gisteren"}]});}
   function rmSp(i){onChange({...value,sporten:sporten.filter((_,j)=>j!==i)});}
   function setL(k,v){onChange({...value,[k]:v});}
   function setG(k,v){onChange({...value,garmin:{...garmin,[k]:v}});}
   function setSlaap(k,v){onChange({...value,slaap:{...slaap,[k]:v}});}
   const hasGeen=sporten.some(s=>s.sport==="Geen");
   return(<>
-    <div className="sq serif">Hoe voelde mijn lichaam?</div><div className="sh">Sport van gisteren · Pijn · Slaap · Garmin</div>
+    <div className="sq serif">Hoe voelde mijn lichaam?</div><div className="sh">Sport · Pijn · Slaap · Garmin</div>
     <div style={{marginBottom:16}}>
-      <div className="lbl" style={{marginBottom:4}}>Sport gedaan gisteren</div>
-      <div style={{fontSize:11,color:"var(--mu)",marginBottom:10}}>{reisdag?"Reisdag — beweging onderweg":"Wat heb je gisteren gedaan?"}</div>
+      <div className="lbl" style={{marginBottom:4}}>Sport gedaan</div>
+      <div style={{fontSize:11,color:"var(--mu)",marginBottom:10}}>{reisdag?"Reisdag — beweging onderweg":"Gisteren of vandaag"}</div>
       {sporten.length===0&&<div style={{color:"var(--su)",fontSize:13,marginBottom:10}}>Nog niets toegevoegd.</div>}
       {sporten.map((s,i)=>(
         <div key={i} className="sp-card">
           {sporten.length>1&&<button type="button" className="rb" onClick={()=>rmSp(i)}>✕</button>}
-          <div className="lbl" style={{marginBottom:8}}>Wat</div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+            <div className="lbl">Wat</div>
+            <div style={{display:"flex",borderRadius:16,overflow:"hidden",border:"1px solid #2a2318"}}>
+              {["gisteren","vandaag"].map(d=><button type="button" key={d} onClick={()=>upSp(i,"dag",d)} style={{padding:"4px 10px",background:(s.dag||"gisteren")===d?"var(--ac)":"transparent",border:"none",color:(s.dag||"gisteren")===d?"var(--a2)":"var(--mu)",fontFamily:"'DM Sans',sans-serif",fontSize:11,cursor:"pointer"}}>{d}</button>)}
+            </div>
+          </div>
           <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:s.sport&&s.sport!=="Geen"?12:0}}>{sportOpts.map(o=><button type="button" key={o} className={`chip sm${s.sport===o?" on":""}`} onClick={()=>upSp(i,"sport",o)}>{o}</button>)}</div>
           {s.sport&&s.sport!=="Geen"&&(<>
             <div className="lbl" style={{marginBottom:8,marginTop:12}}>Duur</div>
@@ -715,6 +727,10 @@ function LichaamStep({value,onChange,light,reisdag}){
       </div>
       <div className="lbl" style={{marginBottom:6,color:"#4a8aa8"}}>Optionele notitie</div>
       <textarea className="ta" value={slaap.notitie||""} onChange={e=>setSlaap("notitie",e.target.value)} placeholder="Wakker geworden? Onrustig?" style={{minHeight:40,borderTop:"1px solid #1e3040",paddingTop:8,color:"#a0c8d8"}}/>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:12,paddingTop:10,borderTop:"1px solid #1e3040"}}>
+        <div className="lbl" style={{color:"#4a8aa8"}}>Gelezen voor slapengaan</div>
+        <button type="button" onClick={()=>setSlaap("gelezen",!slaap.gelezen)} style={{padding:"6px 14px",borderRadius:10,border:"1px solid",fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:"pointer",background:slaap.gelezen?"#1e3a54":"transparent",borderColor:slaap.gelezen?"#2a5a84":"#1e3040",color:slaap.gelezen?"#c8e8f0":"#4a8aa8"}}>📖 {slaap.gelezen?"Ja":"Nee"}</button>
+      </div>
     </div>
     <div className="gar">
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}><div className="lbl-g">Garmin 255</div><div className="tpill"><button type="button" className={garmin.gedragen===true?"on":""} onClick={()=>setG("gedragen",true)}>Gedragen</button><button type="button" className={garmin.gedragen===false?"on":""} onClick={()=>setG("gedragen",false)}>Niet</button></div></div>
@@ -802,7 +818,7 @@ function CompletedView({questions,answers,onEdit,light,reisdag}){
 
 function LichaamCard({l}){
   const sp=l.sporten||[],g=l.garmin,sl=l.slaap,hs=herstelScore(l);
-  return(<div className="card"><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}><div className="lbl">Lichaam</div>{hs!==null&&<div style={{textAlign:"right"}}><div className="serif" style={{fontSize:22,fontWeight:600,color:scoreColor(hs),lineHeight:1}}>{hs}</div><div style={{fontSize:9,color:"var(--mu)",letterSpacing:1}}>HERSTEL</div></div>}</div><div style={{marginBottom:12}}><div className="lbl" style={{marginBottom:6,fontSize:9}}>Sport gisteren</div>{sp.length>0?sp.map((s,i)=><div key={i} style={{marginBottom:4}}><div style={{fontSize:14,color:"var(--tx)",fontWeight:500}}>{s.sport}</div>{s.sport!=="Geen"&&<div style={{display:"flex",gap:6,marginTop:2}}>{s.duur&&<span style={{fontSize:12,color:"var(--mu)",background:"var(--pb)",padding:"2px 8px",borderRadius:10}}>{s.duur}</span>}{s.intensiteit&&<span style={{fontSize:12,color:s.intensiteit==="Laag"?"#4a9e6a":s.intensiteit==="Hoog"?"#e06040":"#d4944a",background:"var(--pb)",padding:"2px 8px",borderRadius:10}}>{s.intensiteit}</span>}</div>}</div>):<div style={{fontSize:14,color:"var(--di)",fontStyle:"italic"}}>Geen sport</div>}</div>{l.locatie&&<div style={{fontSize:13,color:"#5a9a6a",marginBottom:10}}>📍 {l.locatie}</div>}<div style={{borderTop:"1px solid var(--br)",paddingTop:12,marginBottom:10}}>{[{lbl:"Pijn/spanning",val:l.pijn?`${l.pijn} — ${PIJN_L[l.pijn]}`:null},{lbl:"Rustoefeningen",val:l.oefeningen}].map(r=><div key={r.lbl} style={{display:"flex",gap:12,alignItems:"baseline",marginBottom:6}}><span style={{fontSize:12,color:"var(--mu)",width:110,flexShrink:0}}>{r.lbl}</span><span style={{fontSize:14,color:r.val?"var(--tx2)":"var(--di)",fontStyle:r.val?"normal":"italic"}}>{r.val||"niet ingevuld"}</span></div>)}</div>{sl&&<div style={{borderTop:"1px solid #1e3040",paddingTop:12,marginBottom:10}}><div className="lbl-s" style={{marginBottom:8}}>Slaap</div><div style={{display:"flex",gap:16,alignItems:"center",flexWrap:"wrap"}}>{sl.subjectief&&<div style={{textAlign:"center"}}><div style={{fontSize:20}}>{["😴","😕","😐","🙂","😊"][sl.subjectief-1]}</div><div style={{fontSize:10,color:SLAAP_C[sl.subjectief],marginTop:2}}>{SLAAP_L[sl.subjectief]}</div></div>}{(sl.bedtijd||sl.wakkertijd)&&<div style={{fontSize:13,color:"var(--gn)"}}>{sl.bedtijd||"—"} → {sl.wakkertijd||"—"}</div>}{g?.gedragen&&g?.slaapscore!=null&&<div style={{textAlign:"center"}}><div className="serif" style={{fontSize:18,fontWeight:600,color:"var(--gn)"}}>{g.slaapscore}</div><div style={{fontSize:9,color:"var(--gc)"}}>GARMIN</div></div>}</div>{sl.notitie&&<div style={{fontSize:12,color:"var(--tx2)",marginTop:8,lineHeight:1.5,fontStyle:"italic"}}>{sl.notitie}</div>}</div>}{g&&<div style={{borderTop:"1px solid var(--gr)",paddingTop:12,marginBottom:l.fysio?12:0}}><div className="lbl-g" style={{marginBottom:8}}>Garmin</div>{g.gedragen===false?<div style={{fontSize:13,color:"var(--gc)",fontStyle:"italic"}}>Niet gedragen</div>:<div style={{display:"flex",gap:20}}>{[{lbl:"Body Battery",val:g.bodyBattery!=null?String(g.bodyBattery):null},{lbl:"HRV",val:g.hrvStatus}].map(r=><div key={r.lbl} style={{textAlign:"center"}}><div className="serif" style={{fontSize:20,fontWeight:600,color:r.lbl==="HRV"?(HRV.find(h=>h.v===r.val)?.c||"var(--gn)"):"var(--gn)"}}>{r.val||"—"}</div><div style={{fontSize:10,color:"var(--gc)",marginTop:2}}>{r.lbl}</div></div>)}</div>}</div>}{l.fysio&&<div style={{borderTop:"1px solid var(--fr)",paddingTop:12,marginTop:12}}><div className="lbl-f" style={{marginBottom:6}}>Fysio-notitie</div><div style={{fontSize:13,color:"var(--tx2)",lineHeight:1.6,whiteSpace:"pre-wrap"}}>{l.fysio}</div></div>}</div>);
+  return(<div className="card"><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}><div className="lbl">Lichaam</div>{hs!==null&&<div style={{textAlign:"right"}}><div className="serif" style={{fontSize:22,fontWeight:600,color:scoreColor(hs),lineHeight:1}}>{hs}</div><div style={{fontSize:9,color:"var(--mu)",letterSpacing:1}}>HERSTEL</div></div>}</div><div style={{marginBottom:12}}><div className="lbl" style={{marginBottom:6,fontSize:9}}>Sport</div>{sp.length>0?sp.map((s,i)=><div key={i} style={{marginBottom:4}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{fontSize:14,color:"var(--tx)",fontWeight:500}}>{s.sport}</div>{s.dag==="vandaag"&&<span style={{fontSize:9,background:"#1e3a54",color:"#7ac4e8",padding:"1px 6px",borderRadius:8,letterSpacing:.5}}>VANDAAG</span>}</div>{s.sport!=="Geen"&&<div style={{display:"flex",gap:6,marginTop:2}}>{s.duur&&<span style={{fontSize:12,color:"var(--mu)",background:"var(--pb)",padding:"2px 8px",borderRadius:10}}>{s.duur}</span>}{s.intensiteit&&<span style={{fontSize:12,color:s.intensiteit==="Laag"?"#4a9e6a":s.intensiteit==="Hoog"?"#e06040":"#d4944a",background:"var(--pb)",padding:"2px 8px",borderRadius:10}}>{s.intensiteit}</span>}</div>}</div>):<div style={{fontSize:14,color:"var(--di)",fontStyle:"italic"}}>Geen sport</div>}</div>{l.locatie&&<div style={{fontSize:13,color:"#5a9a6a",marginBottom:10}}>📍 {l.locatie}</div>}<div style={{borderTop:"1px solid var(--br)",paddingTop:12,marginBottom:10}}>{[{lbl:"Pijn/spanning",val:l.pijn?`${l.pijn} — ${PIJN_L[l.pijn]}`:null},{lbl:"Rustoefeningen",val:l.oefeningen}].map(r=><div key={r.lbl} style={{display:"flex",gap:12,alignItems:"baseline",marginBottom:6}}><span style={{fontSize:12,color:"var(--mu)",width:110,flexShrink:0}}>{r.lbl}</span><span style={{fontSize:14,color:r.val?"var(--tx2)":"var(--di)",fontStyle:r.val?"normal":"italic"}}>{r.val||"niet ingevuld"}</span></div>)}</div>{sl&&<div style={{borderTop:"1px solid #1e3040",paddingTop:12,marginBottom:10}}><div className="lbl-s" style={{marginBottom:8}}>Slaap</div><div style={{display:"flex",gap:16,alignItems:"center",flexWrap:"wrap"}}>{sl.subjectief&&<div style={{textAlign:"center"}}><div style={{fontSize:20}}>{["😴","😕","😐","🙂","😊"][sl.subjectief-1]}</div><div style={{fontSize:10,color:SLAAP_C[sl.subjectief],marginTop:2}}>{SLAAP_L[sl.subjectief]}</div></div>}{(sl.bedtijd||sl.wakkertijd)&&<div style={{fontSize:13,color:"var(--gn)"}}>{sl.bedtijd||"—"} → {sl.wakkertijd||"—"}</div>}{g?.gedragen&&g?.slaapscore!=null&&<div style={{textAlign:"center"}}><div className="serif" style={{fontSize:18,fontWeight:600,color:"var(--gn)"}}>{g.slaapscore}</div><div style={{fontSize:9,color:"var(--gc)"}}>GARMIN</div></div>}</div>{sl.notitie&&<div style={{fontSize:12,color:"var(--tx2)",marginTop:8,lineHeight:1.5,fontStyle:"italic"}}>{sl.notitie}</div>}</div>}{g&&<div style={{borderTop:"1px solid var(--gr)",paddingTop:12,marginBottom:l.fysio?12:0}}><div className="lbl-g" style={{marginBottom:8}}>Garmin</div>{g.gedragen===false?<div style={{fontSize:13,color:"var(--gc)",fontStyle:"italic"}}>Niet gedragen</div>:<div style={{display:"flex",gap:20}}>{[{lbl:"Body Battery",val:g.bodyBattery!=null?String(g.bodyBattery):null},{lbl:"HRV",val:g.hrvStatus}].map(r=><div key={r.lbl} style={{textAlign:"center"}}><div className="serif" style={{fontSize:20,fontWeight:600,color:r.lbl==="HRV"?(HRV.find(h=>h.v===r.val)?.c||"var(--gn)"):"var(--gn)"}}>{r.val||"—"}</div><div style={{fontSize:10,color:"var(--gc)",marginTop:2}}>{r.lbl}</div></div>)}</div>}</div>}{l.fysio&&<div style={{borderTop:"1px solid var(--fr)",paddingTop:12,marginTop:12}}><div className="lbl-f" style={{marginBottom:6}}>Fysio-notitie</div><div style={{fontSize:13,color:"var(--tx2)",lineHeight:1.6,whiteSpace:"pre-wrap"}}>{l.fysio}</div></div>}</div>);
 }
 
 function EntryView({entry,label,avond}){
